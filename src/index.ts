@@ -10,7 +10,7 @@ export type AppEnv = {
   }
 }
 
-export function definePicobase(config: PicobaseConfig): Hono {
+export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
   const resolved: Required<PicobaseConfig> = {
     database: config.database,
     basePath: config.basePath ?? '/',
