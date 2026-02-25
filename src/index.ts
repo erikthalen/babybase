@@ -5,6 +5,7 @@ import type { DatabaseSync } from 'node:sqlite'
 import { createTablesRouter } from './features/tables/router.ts'
 import { createSchemaRouter } from './features/schema/router.ts'
 import { createMigrationsRouter } from './features/migrations/router.ts'
+import { createBackupsRouter } from './features/backups/router.ts'
 
 export type AppEnv = {
   Variables: {
@@ -36,7 +37,7 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
   app.route('/tables', createTablesRouter())
   app.route('/schema', createSchemaRouter())
   app.route('/migrations', createMigrationsRouter())
-  app.get('/backups', (c) => c.text('backups coming soon'))
+  app.route('/backups', createBackupsRouter())
 
   return app
 }
