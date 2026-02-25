@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { createDb } from './db/client.ts'
 import type { PicobaseConfig } from './types.ts'
 import type { DatabaseSync } from 'node:sqlite'
+import { createTablesRouter } from './features/tables/router.ts'
 
 export type AppEnv = {
   Variables: {
@@ -30,8 +31,7 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
 
   app.get('/', (c) => c.redirect(`${resolved.basePath.replace(/\/$/, '')}/tables`))
 
-  // Feature routers will be mounted in later tasks
-  app.get('/tables', (c) => c.text('tables coming soon'))
+  app.route('/tables', createTablesRouter())
   app.get('/schema', (c) => c.text('schema coming soon'))
   app.get('/migrations', (c) => c.text('migrations coming soon'))
   app.get('/backups', (c) => c.text('backups coming soon'))
