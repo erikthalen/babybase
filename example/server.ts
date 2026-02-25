@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server"
 import { Hono } from "hono"
-import { definePicobase } from "../src/index.js"
+import { definePicobase } from "../src/index.ts"
 
 const app = new Hono()
 app.route("/", definePicobase({ database: "./example/dev.db" }))

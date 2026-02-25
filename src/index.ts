@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import type { PicobaseConfig } from "./types.js"
+import type { PicobaseConfig } from "./types.ts"
 
 export function definePicobase(_config: PicobaseConfig): Hono {
   const app = new Hono()
