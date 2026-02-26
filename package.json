@@ -1,20 +1,9 @@
 {
-  "name": "picobase",
-  "version": "0.1.0",
-  "type": "module",
+  "name": "@picobase/repo",
+  "private": true,
   "scripts": {
-    "dev": "node --watch example/server.ts",
-    "start": "node example/server.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "seed": "node example/seed.ts"
-  },
-  "dependencies": {
-    "hono": "^4.7.0",
-    "@hono/node-server": "^1.14.0"
-  },
-  "devDependencies": {
-    "vitest": "^3.0.0",
-    "@types/node": "^22.0.0"
+    "dev": "pnpm -r dev",
+    "start": "pnpm -r start",
+    "seed": "pnpm -r seed"
   }
 }

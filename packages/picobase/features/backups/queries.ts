@@ -34,9 +34,7 @@ export function listBackups(backupsDir: string): BackupEntry[] {
     .sort((a, b) => b.name.localeCompare(a.name))
 }
 
-export function restoreBackup(dbPath: string, backupsDir: string, backupName: string): void {
-  // Create safety backup of current state first
-  createBackup(dbPath, backupsDir)
-  // Overwrite live db with the chosen backup
+export function restoreBackup(dbPath: string, backupsDir: string, backupName: string, backup = true): void {
+  if (backup) createBackup(dbPath, backupsDir)
   cpSync(join(backupsDir, backupName), dbPath)
 }

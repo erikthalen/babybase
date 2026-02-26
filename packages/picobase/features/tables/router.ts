@@ -11,12 +11,15 @@ const LIMIT = 50;
 export function createTablesRouter(): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
 
-  // List all tables
+  // List all tables — redirect to first table if any exist
   app.get("/", async (c) => {
     const db = c.get("db");
     const config = c.get("config");
     const tables = listTables(db);
     const base = config.basePath.replace(/\/$/, "");
+    if (tables.length > 0) {
+      return c.redirect(`${base}/tables/${tables[0]}`);
+    }
     const content = tableListView(tables, base);
     const navHtml = nav({ basePath: base, activeSection: "tables", tables });
     return respond(c, {
@@ -41,6 +44,7 @@ export function createTablesRouter(): Hono<AppEnv> {
     });
     const content = rowsView({
       table: tableName,
+      tables,
       columns,
       rows,
       page,
@@ -69,12 +73,13 @@ export function createTablesRouter(): Hono<AppEnv> {
       ).run(...(vals as string[]));
     }
     const base = config.basePath.replace(/\/$/, "");
+    const tables = listTables(db);
     const columns = getColumns(db, tableName);
     const total = countRows(db, tableName);
     const rows = getRows(db, tableName, { limit: LIMIT, offset: 0 });
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
-        `<main id="main">${rowsView({ table: tableName, columns, rows, page: 1, total, limit: LIMIT, basePath: base })}</main>`,
+        `<main id="main">${rowsView({ table: tableName, tables, columns, rows, page: 1, total, limit: LIMIT, basePath: base })}</main>`,
       );
     });
   });

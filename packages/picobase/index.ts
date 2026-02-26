@@ -22,7 +22,11 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
     backupsDir: config.backupsDir ?? './backups',
   }
 
-  const db = createDb(resolved.database)
+  let db = createDb(resolved.database)
+  const reconnectDb = () => {
+    db = createDb(resolved.database)
+  }
+
   const app = new Hono<AppEnv>()
 
   // Inject db and config into every request
@@ -37,7 +41,7 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
   app.route('/tables', createTablesRouter())
   app.route('/schema', createSchemaRouter())
   app.route('/migrations', createMigrationsRouter())
-  app.route('/backups', createBackupsRouter())
+  app.route('/backups', createBackupsRouter(reconnectDb))
 
   return app
 }

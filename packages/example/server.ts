@@ -1,13 +1,16 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { definePicobase } from "../src/index.ts";
+import { definePicobase } from "@picobase/core";
+
+const ROOT = import.meta.dirname;
 
 const app = new Hono();
 app.route(
   "/",
   definePicobase({
-    database: "./example/dev.db",
-    migrationsDir: "./example/migrations",
+    database: `${ROOT}/chinook.db`,
+    migrationsDir: `${ROOT}/migrations`,
+    backupsDir: `${ROOT}/backups`,
   }),
 );
 

@@ -6,7 +6,7 @@ import { backupsView } from './views.ts'
 import { layout, nav } from '../../components/layout.ts'
 import { respond, sseAction } from '../../components/sse.ts'
 
-export function createBackupsRouter(): Hono<AppEnv> {
+export function createBackupsRouter(reconnectDb: () => void): Hono<AppEnv> {
   const app = new Hono<AppEnv>()
 
   app.get('/', async (c) => {
@@ -36,10 +36,14 @@ export function createBackupsRouter(): Hono<AppEnv> {
 
   // Restore from a backup — static route before parameterized (none here, but good practice)
   app.post('/:name/restore', async (c) => {
+    const db = c.get('db')
     const config = c.get('config')
     const name = decodeURIComponent(c.req.param('name'))
     const base = config.basePath.replace(/\/$/, '')
-    restoreBackup(config.database, config.backupsDir, name)
+    const backup = c.req.query('backup') !== 'false'
+    try { db.close() } catch { /* already closed or errored */ }
+    restoreBackup(config.database, config.backupsDir, name, backup)
+    reconnectDb()
     const backups = listBackups(config.backupsDir)
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(`<main id="main">${backupsView({ backups, basePath: base })}</main>`)
