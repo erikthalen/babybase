@@ -17,6 +17,8 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
             content="width=device-width, initial-scale=1.0"
           />
           <title>${title} — Picobase</title>
+          <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNzAgMTcwIj48cGF0aCBkPSJNODUgMEMxMDguODM5IDEuMDQyMDJlLTA2IDEzMC4zODUgOS44MTM2MiAxNDUuODIgMjUuNjIxMUMxNDYuMjk1IDI2LjEwNzcgMTQ2Ljc2NSAyNi41OTk4IDE0Ny4yMjkgMjcuMDk3N0MxNjEuMTI2IDQyLjAyNjQgMTY5LjcxNSA2MS45NjI0IDE2OS45OTMgODMuOTAxNEMxNjkuOTk4IDg0LjI2NyAxNzAgODQuNjMzMiAxNzAgODVDMTcwIDEzMS45NDQgMTMxLjk0NCAxNzAgODUgMTcwSDBWODVDMi4wNTJlLTA2IDM4LjA1NTggMzguMDU1OCAtMi4wNTJlLTA2IDg1IDBaIiBmaWxsPSJ3aGl0ZSIvPjwvc3ZnPg==" media="(prefers-color-scheme: dark)" />
+          <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNzAgMTcwIj48cGF0aCBkPSJNODUgMEMxMDguODM5IDEuMDQyMDJlLTA2IDEzMC4zODUgOS44MTM2MiAxNDUuODIgMjUuNjIxMUMxNDYuMjk1IDI2LjEwNzcgMTQ2Ljc2NSAyNi41OTk4IDE0Ny4yMjkgMjcuMDk3N0MxNjEuMTI2IDQyLjAyNjQgMTY5LjcxNSA2MS45NjI0IDE2OS45OTMgODMuOTAxNEMxNjkuOTk4IDg0LjI2NyAxNzAgODQuNjMzMiAxNzAgODVDMTcwIDEzMS45NDQgMTMxLjk0NCAxNzAgODUgMTcwSDBWODVDMi4wNTJlLTA2IDM4LjA1NTggMzguMDU1OCAtMi4wNTJlLTA2IDg1IDBaIiBmaWxsPSJibGFjayIvPjwvc3ZnPg==" media="(prefers-color-scheme: light)" />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -95,7 +97,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
             aside h1 {
               display: flex;
               padding: 0.375rem 0.625rem;
-              margin-bottom: 1rem;
+              margin-bottom: 2rem;
             }
             aside a {
               display: flex;
@@ -376,7 +378,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               color: var(--pb-text-heading);
             }
             .tab-bar a.active {
-              background: rgba(255, 255, 255, 0.18);
+              background: rgb(51 51 51);
               color: #fafafa;
             }
             .pagination {
@@ -480,13 +482,6 @@ export function nav({
       ${raw(icon ?? "")} ${label}
     </a>`;
   };
-
-  const tableLinks = tables
-    .map(
-      (t) =>
-        `<a href="${base}/tables/${t}" data-on:click="@get('${base}/tables/${t}')">${t}</a>`,
-    )
-    .join("\n");
 
   return html` <h1
       style="display:flex;align-items:center;gap:0.5rem;font-size:1.25rem"
@@ -626,10 +621,5 @@ export function nav({
           <path d="M19 16l3 3l-3 3" />
         </svg>`.toString(),
       ),
-    )}
-    ${tables.length > 0
-      ? raw(
-          `<hr style="border:none;margin:0.5rem 0; height:1px;border-top: 1px solid var(--pb-border-muted);"><small style="padding:0.25rem 0.625rem;margin-bottom:0.25rem;font-weight: 500;color: var(--pb-text-muted);font-size: 0.6875rem;text-transform: uppercase;letter-spacing: 0.06em;">Tables</small>${tableLinks}`,
-        )
-      : ""}`.toString();
+    )}`.toString();
 }
