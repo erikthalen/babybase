@@ -37,4 +37,17 @@ describe('schema router', () => {
     expect(body).toContain('users')
     expect(body).toContain('posts')
   })
+
+  it('POST /schema/tables creates a new table and returns SSE', async () => {
+    const app = makeApp()
+    const res = await app.request('/schema/tables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _tableName: 'orders' }),
+    })
+    expect(res.status).toBe(200)
+    const body = await res.text()
+    // SSE response should contain the new table name in the patched HTML
+    expect(body).toContain('orders')
+  })
 })
