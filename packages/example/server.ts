@@ -8,7 +8,7 @@ const app = new Hono();
 app.route(
   "/",
   definePicobase({
-    database: `${ROOT}/chinook.db`,
+    database: `${ROOT}/dev.db`,
     migrationsDir: `${ROOT}/migrations`,
     backupsDir: `${ROOT}/backups`,
   }),

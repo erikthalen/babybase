@@ -1,11 +1,12 @@
 import { html, raw } from "hono/html";
-import type { TableSchema } from "./queries.ts";
+import type { TableSchema, DesiredColumn } from "./queries.ts";
 import { tabBar } from "./components/tab-bar.ts";
 import { tableBox } from "./components/table-box.ts";
 import { svgRelations } from "./components/svg-relations.ts";
 import { cameraScript } from "./components/camera-script.ts";
 import { zoomControls } from "./components/zoom-controls.ts";
 import { createTableDialog } from "./components/create-table-dialog.ts";
+import { editTableDialogShell } from "./components/edit-table-dialog.ts";
 
 export function schemaListView(
   schema: TableSchema[],
@@ -74,7 +75,11 @@ export function schemaListView(
   );
 }
 
-export function erDiagramView(schema: TableSchema[], basePath: string): string {
+export function erDiagramView(
+  schema: TableSchema[],
+  basePath: string,
+  pendingColumns: Map<string, DesiredColumn[]> = new Map(),
+): string {
   const BOX_W = 260;
   const ROW_H = 36;
   const BOX_HEADER_H = 32;
@@ -116,10 +121,14 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
   );
   const canvasH = Math.max(2000, canvasContentH + 400);
   const base = basePath.replace(/\/$/, "");
+  const pendingCount = pendingColumns.size;
 
   return String(
     html`<style>
-        #main { overflow: hidden; height: 100vh; }
+        #main {
+          overflow: hidden;
+          height: 100vh;
+        }
       </style>
       <div
         data-signals="{_tableName: ''}"
@@ -127,7 +136,23 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
       >
         ${tabBar()}
         <div style="position:relative;flex:1;min-height:0">
-          ${createTableDialog(base)} ${zoomControls()}
+          <div
+            style="position:absolute;top:1rem;left:1rem;z-index:10;display:flex;align-items:center;gap:0.5rem"
+          >
+            ${createTableDialog(base)}
+            ${pendingCount > 0
+              ? html`<button
+                  id="publish-btn"
+                  class="primary"
+                  data-on:click="@post('${base}/schema/publish')"
+                >
+                  Publish (${pendingCount})
+                </button>`
+              : html`<span id="publish-btn" style="display:none"></span>`}
+          </div>
+
+          ${editTableDialogShell()} ${zoomControls()}
+
           <div
             id="diagram-viewport"
             style="width:100%;height:100%;overflow:hidden;background:var(--pb-diagram-bg);"
@@ -145,7 +170,15 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
                 ${svgRelations(schema, positions, BOX_W, BOX_HEADER_H, ROW_H)}
               </svg>
               ${schema.map((t) =>
-                tableBox(t, positions[t.name]!, BOX_W, BOX_HEADER_H, ROW_H),
+                tableBox(
+                  t,
+                  positions[t.name]!,
+                  BOX_W,
+                  BOX_HEADER_H,
+                  ROW_H,
+                  base,
+                  pendingColumns.get(t.name) ?? null,
+                ),
               )}
             </div>
           </div>

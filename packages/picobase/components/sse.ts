@@ -1,16 +1,22 @@
 import type { Context } from "hono";
 import { streamSSE } from "hono/streaming";
 
+export type PatchElementsOptions = {
+  selector?: string;
+  mode?: "outer" | "inner" | "replace" | "prepend" | "append" | "before" | "after" | "remove";
+};
+
 export type SSEStream = {
-  patchElements: (html: string) => Promise<void>;
+  patchElements: (html: string, options?: PatchElementsOptions) => Promise<void>;
   patchSignals: (signals: Record<string, unknown>) => Promise<void>;
 };
 
-function formatPatchElements(html: string): string {
-  return html
-    .split("\n")
-    .map((l) => `elements ${l}`)
-    .join("\n");
+function formatPatchElements(html: string, options?: PatchElementsOptions): string {
+  const lines: string[] = [];
+  if (options?.selector) lines.push(`selector ${options.selector}`);
+  if (options?.mode) lines.push(`mode ${options.mode}`);
+  html.split("\n").forEach((l) => lines.push(`elements ${l}`));
+  return lines.join("\n");
 }
 
 function formatPatchSignals(signals: Record<string, unknown>): string {
@@ -52,10 +58,10 @@ export function sseAction(
 ): Response {
   return streamSSE(c, async (stream) => {
     await fn({
-      patchElements: (html) =>
+      patchElements: (html, options) =>
         stream.writeSSE({
           event: "datastar-patch-elements",
-          data: formatPatchElements(html),
+          data: formatPatchElements(html, options),
         }),
       patchSignals: (signals) =>
         stream.writeSSE({
