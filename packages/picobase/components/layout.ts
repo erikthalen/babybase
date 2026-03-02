@@ -1,14 +1,14 @@
 import { html, raw } from "hono/html";
 
 interface LayoutProps {
-	title: string;
-	nav: string;
-	content: string;
+  title: string;
+  nav: string;
+  content: string;
 }
 
 export function layout({ title, nav: navHtml, content }: LayoutProps): string {
-	return String(
-		html`<!DOCTYPE html>
+  return String(
+    html`<!DOCTYPE html>
       <html lang="en">
         <head>
           <meta charset="UTF-8" />
@@ -33,17 +33,23 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
           <link
-            href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:wght@400;500&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
             rel="stylesheet"
           />
+
+          <link
+            href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap"
+            rel="stylesheet"
+          />
+
           <script
             type="module"
             src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.7/bundles/datastar.js"
           ></script>
           <style>
             :root {
-              --pb-sans-serif: "Inter", system-ui, sans-serif;
-              --pb-monospace: "JetBrains Mono", monospace;
+              --pb-sans-serif: "Be Vietnam Pro", system-ui, sans-serif;
+              --pb-monospace: "Atkinson Hyperlegible Mono", monospace;
 
               --pb-bg: #09090b;
               --pb-surface: #111113;
@@ -282,7 +288,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               cursor: pointer;
               padding: 0.375rem 0.75rem;
               border: 1px solid var(--pb-border-input);
-              /* border-radius: 6px; */
+              border-radius: 8px;
               background: transparent;
               color: #fafafa;
               font-size: 0.8125rem;
@@ -478,32 +484,32 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
           <main id="main">${raw(content)}</main>
         </body>
       </html>`,
-	);
+  );
 }
 
 interface NavProps {
-	basePath: string;
-	activeSection: "tables" | "schema" | "migrations" | "backups";
-	tables?: string[];
+  basePath: string;
+  activeSection: "tables" | "schema" | "migrations" | "backups";
+  tables?: string[];
 }
 
 export function nav({ basePath, activeSection }: NavProps): string {
-	const base = basePath.replace(/\/$/, "");
-	const link = (
-		path: string,
-		label: string,
-		section: string,
-		icon?: string,
-	) => {
-		return html`<a
+  const base = basePath.replace(/\/$/, "");
+  const link = (
+    path: string,
+    label: string,
+    section: string,
+    icon?: string,
+  ) => {
+    return html`<a
       href="${base}${path}"
       ${activeSection === section ? " class=active" : ""}
     >
       ${raw(icon ?? "")} ${label}
     </a>`;
-	};
+  };
 
-	return html` <h1
+  return html` <h1
       style="display:flex;align-items:center;gap:0.5rem;font-size:1.25rem"
     >
       <svg
@@ -531,11 +537,11 @@ export function nav({ basePath, activeSection }: NavProps): string {
       </svg>
     </h1>
     ${raw(
-			link(
-				"/tables",
-				"Tables",
-				"tables",
-				html`<svg
+      link(
+        "/tables",
+        "Tables",
+        "tables",
+        html`<svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
@@ -554,14 +560,14 @@ export function nav({ basePath, activeSection }: NavProps): string {
           <path d="M3 10h18" />
           <path d="M10 3v18" />
         </svg>`.toString(),
-			),
-		)}
+      ),
+    )}
     ${raw(
-			link(
-				"/schema/diagram",
-				"Schema",
-				"schema",
-				html`<svg
+      link(
+        "/schema/diagram",
+        "Schema",
+        "schema",
+        html`<svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
@@ -586,14 +592,14 @@ export function nav({ basePath, activeSection }: NavProps): string {
           <path d="M6 15v-1a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v1" />
           <path d="M12 9l0 3" />
         </svg>`.toString(),
-			),
-		)}
+      ),
+    )}
     ${raw(
-			link(
-				"/migrations",
-				"Migrations",
-				"migrations",
-				html`<svg
+      link(
+        "/migrations",
+        "Migrations",
+        "migrations",
+        html`<svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
@@ -611,14 +617,14 @@ export function nav({ basePath, activeSection }: NavProps): string {
           <path d="M13 16l4 4l4 -4" />
           <path d="M17 10l0 10" />
         </svg>`.toString(),
-			),
-		)}
+      ),
+    )}
     ${raw(
-			link(
-				"/backups",
-				"Backups",
-				"backups",
-				html`<svg
+      link(
+        "/backups",
+        "Backups",
+        "backups",
+        html`<svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
           height="16"
@@ -640,6 +646,6 @@ export function nav({ basePath, activeSection }: NavProps): string {
           <path d="M16 19h6" />
           <path d="M19 16l3 3l-3 3" />
         </svg>`.toString(),
-			),
-		)}`.toString();
+      ),
+    )}`.toString();
 }
