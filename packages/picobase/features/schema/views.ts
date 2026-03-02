@@ -246,7 +246,7 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
           to="-14"
           dur="0.75s"
           repeatCount="indefinite"
-        /></path>`;
+      /></path>`;
     }),
   );
 
@@ -329,6 +329,11 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
     (function () {
       var container = document.getElementById("diagram-viewport");
       var wrap = document.getElementById("canvas-wrap");
+      var BW = ${BOX_W},
+        BH = ${BOX_HEADER_H},
+        RH = ${ROW_H};
+
+      // ── Camera ────────────────────────────────────────────────
       var camera = { x: 0, y: 0, z: 1 };
 
       function applyCamera() {
@@ -382,33 +387,192 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
         { passive: false },
       );
 
+      // ── Box positions ─────────────────────────────────────────
+      var pos = {};
+      wrap.querySelectorAll("[data-table]").forEach(function (el) {
+        pos[el.dataset.table] = {
+          x: parseFloat(el.style.left),
+          y: parseFloat(el.style.top),
+          h: parseFloat(el.dataset.h),
+        };
+      });
+
+      // ── Path builder (mirrors server-side routePath) ──────────
+      function bp(f, t, fc, tc) {
+        var ST = 10,
+          R = 16;
+        var y1 = f.y + BH + fc * RH + RH / 2;
+        var y2 = t.y + BH + tc * RH + RH / 2;
+        var sv = y2 >= y1 ? 1 : -1;
+        var adx = t.x > f.x ? t.x - f.x : f.x - t.x;
+        var sh = t.x >= f.x ? 1 : -1;
+        var px1 = sh > 0 ? f.x + BW : f.x;
+        var px2 = sh > 0 ? t.x : t.x + BW;
+        var FOLD_THRESHOLD = 50;
+        var willFold =
+          sh > 0
+            ? !(px2 - px1 >= FOLD_THRESHOLD)
+            : !(px1 - px2 >= FOLD_THRESHOLD);
+        if (!(adx >= 2) || willFold) {
+          var cx = f.x > t.x ? f.x + BW + ST : t.x + BW + ST;
+          var vertDist = y2 > y1 ? y2 - y1 : y1 - y2;
+          var r = vertDist / 2 > R ? R : vertDist / 2;
+          if (!(r > 0.5))
+            return "M" + (f.x + BW) + "," + y1 + " H" + cx + " H" + (t.x + BW);
+          var ud =
+            "M" +
+            (f.x + BW) +
+            "," +
+            y1 +
+            " H" +
+            (cx - r) +
+            " Q" +
+            cx +
+            "," +
+            y1 +
+            " " +
+            cx +
+            "," +
+            (y1 + sv * r);
+          if (vertDist - 2 * r > 0.5) ud += " V" + (y2 - sv * r);
+          ud +=
+            " Q" +
+            cx +
+            "," +
+            y2 +
+            " " +
+            (cx - r) +
+            "," +
+            y2 +
+            " H" +
+            (t.x + BW);
+          return ud;
+        }
+        var ax = px1 + sh * ST,
+          bx = px2 - sh * ST;
+        var ady = y2 > y1 ? y2 - y1 : y1 - y2;
+        if (!(ady >= 2)) return "M" + px1 + "," + y1 + " H" + px2;
+        var vx = (ax + bx) / 2;
+        var yMax = y1 > y2 ? y1 : y2,
+          yMin = y1 + y2 - yMax;
+        for (var k in pos) {
+          var bb = pos[k];
+          if (
+            vx > bb.x + 2 &&
+            bb.x + BW - 2 > vx &&
+            bb.y + bb.h > yMin &&
+            yMax > bb.y
+          ) {
+            var dl = vx - bb.x,
+              dr = bb.x + BW - vx;
+            vx = dl > dr ? bb.x + BW + R : bb.x - R;
+          }
+        }
+        if (sh > 0) {
+          if (!(vx >= ax + R)) vx = ax + R;
+          if (vx > bx - R) vx = bx - R;
+        } else {
+          if (vx > ax - R) vx = ax - R;
+          if (!(vx >= bx + R)) vx = bx + R;
+        }
+        var r2 = ady / 2 > R ? R : ady / 2;
+        var c1x = vx - sh * r2,
+          c1y = y1 + sv * r2,
+          c2y = y2 - sv * r2,
+          c2x = vx + sh * r2;
+        var d = "M" + px1 + "," + y1 + " H" + ax;
+        var dax = ax > c1x ? ax - c1x : c1x - ax;
+        if (dax > 0.5) d += " H" + c1x;
+        d += " Q" + vx + "," + y1 + " " + vx + "," + c1y;
+        var dv = c1y > c2y ? c1y - c2y : c2y - c1y;
+        if (dv > 0.5) d += " V" + c2y;
+        d += " Q" + vx + "," + y2 + " " + c2x + "," + y2;
+        var dbx = c2x > bx ? c2x - bx : bx - c2x;
+        if (dbx > 0.5) d += " H" + bx;
+        d += " H" + px2;
+        return d;
+      }
+
+      function updatePaths() {
+        wrap.querySelectorAll("path[data-from]").forEach(function (p) {
+          var f = pos[p.dataset.from],
+            t = pos[p.dataset.to];
+          if (f && t)
+            p.setAttribute("d", bp(f, t, +p.dataset.fromCol, +p.dataset.toCol));
+        });
+      }
+
+      // ── Unified mousedown: table drag or canvas pan ───────────
+      var isDragging = false,
+        dragEl = null,
+        dragStart = null,
+        dragElStart = null;
       var isPanning = false,
-        panStart,
-        cameraAtStart;
+        panStart = null,
+        cameraAtStart = null;
+
       wrap.addEventListener("mousedown", function (e) {
-        if (e.target.closest && e.target.closest("[data-table]")) return;
+        var header = e.target.closest("[data-header]");
+        if (header) {
+          var box = header.closest("[data-table]");
+          if (!box) return;
+          isDragging = true;
+          dragEl = box;
+          dragStart = { x: e.clientX, y: e.clientY };
+          dragElStart = {
+            x: pos[box.dataset.table].x,
+            y: pos[box.dataset.table].y,
+          };
+          header.style.cursor = "grabbing";
+          e.preventDefault();
+          return;
+        }
+        if (e.target.closest("[data-table]")) return;
         isPanning = true;
         panStart = { x: e.clientX, y: e.clientY };
         cameraAtStart = { x: camera.x, y: camera.y, z: camera.z };
         container.style.cursor = "grabbing";
         e.preventDefault();
       });
+
       window.addEventListener("mousemove", function (e) {
-        if (!isPanning) return;
-        camera = {
-          x: cameraAtStart.x + (e.clientX - panStart.x) / cameraAtStart.z,
-          y: cameraAtStart.y + (e.clientY - panStart.y) / cameraAtStart.z,
-          z: cameraAtStart.z,
-        };
-        applyCamera();
+        if (isDragging) {
+          var dx = (e.clientX - dragStart.x) / camera.z;
+          var dy = (e.clientY - dragStart.y) / camera.z;
+          var nx = dragElStart.x + dx,
+            ny = dragElStart.y + dy;
+          pos[dragEl.dataset.table] = {
+            x: nx,
+            y: ny,
+            h: pos[dragEl.dataset.table].h,
+          };
+          dragEl.style.left = nx + "px";
+          dragEl.style.top = ny + "px";
+          updatePaths();
+        }
+        if (isPanning) {
+          camera = {
+            x: cameraAtStart.x + (e.clientX - panStart.x) / cameraAtStart.z,
+            y: cameraAtStart.y + (e.clientY - panStart.y) / cameraAtStart.z,
+            z: cameraAtStart.z,
+          };
+          applyCamera();
+        }
       });
+
       window.addEventListener("mouseup", function () {
+        if (isDragging) {
+          dragEl.querySelector("[data-header]").style.cursor = "grab";
+          isDragging = false;
+          dragEl = null;
+        }
         if (isPanning) {
           isPanning = false;
           container.style.cursor = "";
         }
       });
 
+      // ── Zoom buttons ──────────────────────────────────────────
       var btnIn = document.getElementById("zoom-in");
       var btnOut = document.getElementById("zoom-out");
       function zoomStep(dir) {
@@ -490,7 +654,21 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
               id="zoom-out"
               style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem"
             >
-              −
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-minus"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l14 0" />
+              </svg>
             </button>
             <span
               id="zoom-level"
@@ -502,7 +680,22 @@ export function erDiagramView(schema: TableSchema[], basePath: string): string {
               id="zoom-in"
               style="width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;font-size:1.1rem"
             >
-              +
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="icon icon-tabler icons-tabler-outline icon-tabler-plus"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M12 5l0 14" />
+                <path d="M5 12l14 0" />
+              </svg>
             </button>
           </div>
 
