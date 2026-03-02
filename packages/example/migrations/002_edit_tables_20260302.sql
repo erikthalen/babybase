@@ -1,0 +1,1 @@
+ALTER TABLE "bra" ADD COLUMN "hehehehe" TEXT DEFAULT hoho;

@@ -6,12 +6,12 @@ const ROOT = import.meta.dirname;
 
 const app = new Hono();
 app.route(
-	"/",
-	definePicobase({
-		database: `${ROOT}/chinook.db`,
-		migrationsDir: `${ROOT}/migrations`,
-		backupsDir: `${ROOT}/backups`,
-	}),
+  "/",
+  definePicobase({
+    database: `${ROOT}/dev.db`,
+    migrationsDir: `${ROOT}/migrations`,
+    backupsDir: `${ROOT}/backups`,
+  }),
 );
 
 serve({ fetch: app.fetch, port: 3002 }, () => {

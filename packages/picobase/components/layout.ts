@@ -278,6 +278,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               background: rgba(255, 255, 255, 0.02);
             }
             button {
+              user-select: none;
               cursor: pointer;
               padding: 0.375rem 0.75rem;
               border: 1px solid var(--pb-border-input);
