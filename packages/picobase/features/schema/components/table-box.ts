@@ -29,11 +29,10 @@ export function tableBox(
     ? pendingColumns.map((c, ci) => {
         const isNew = c.originalName === "";
         const isPk = !isNew && (pkMap.get(c.originalName)?.pk ?? false);
-        const fk = t.foreignKeys.some(
-          (f) => f.from === (c.originalName || c.name),
-        )
-          ? "⤷ "
-          : "";
+        const fk =
+          (c.fkRef || (!isNew && t.foreignKeys.some((f) => f.from === c.originalName)))
+            ? "⤷ "
+            : "";
         const bg = ci % 2 === 1 ? "var(--pb-diagram-row-alt)" : "var(--pb-bg)";
         const opacity = isNew ? "opacity:0.45;" : "";
         return html`<div

@@ -208,6 +208,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
         type: String(body[`editcol_${i}_type`] ?? "TEXT"),
         dflt_value: String(body[`editcol_${i}_default`] ?? ""),
         notnull: Boolean(body[`editcol_${i}_notnull`]),
+        fkRef: String(body[`editcol_${i}_fkref`] ?? ""),
       });
     }
 

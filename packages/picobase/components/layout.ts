@@ -95,22 +95,41 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               color: #fafafa;
             }
             aside {
-              width: 240px;
-              padding: 1.25rem 0.875rem;
               flex-shrink: 0;
               display: flex;
               flex-direction: column;
               gap: 2px;
               border-right: 1px solid var(--pb-border);
               background: var(--pb-surface);
+
+              overflow: visible;
+
+              @media (width > 600px) {
+                padding: 1.25rem 0.875rem;
+                width: 240px;
+              }
             }
             aside h1 {
+              position: absolute;
+              z-index: 10;
+              margin: 0.75rem;
               display: flex;
-              padding: 0.375rem 0.625rem;
-              margin-bottom: 2rem;
+
+              @media (width > 600px) {
+                position: relative;
+                padding: 0.375rem 0.625rem;
+                margin: 0;
+                margin-bottom: 2rem;
+              }
+            }
+            aside h1 svg:nth-child(2) {
+              display: none;
+              @media (width > 600px) {
+                display: block;
+              }
             }
             aside a {
-              display: flex;
+              display: none;
               gap: 0.625rem;
               align-items: center;
               padding: 0.4375rem 0.625rem;
@@ -122,6 +141,10 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               transition:
                 background 0.12s,
                 color 0.12s;
+
+              @media (width > 600px) {
+                display: flex;
+              }
             }
             aside a svg {
               flex-shrink: 0;
@@ -367,6 +390,12 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               left: 0;
               background: var(--pb-bg);
               z-index: 1;
+
+              padding-left: 1.25rem;
+
+              @media (width > 600px) {
+                padding-left: 0;
+              }
             }
             .tab-bar::-webkit-scrollbar {
               display: none;
