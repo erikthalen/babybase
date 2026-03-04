@@ -78,11 +78,11 @@ body:has(.is-home) {
   --vp-c-divider: #606060;
 }
 
-.VPNavBar.home {
+.VPNavBar:not(.has-sidebar) {
   background: transparent !important;
 }
 
-.VPNavBar.home .divider {
+.VPNavBar:not(.has-sidebar) .divider {
   --vp-c-gutter: transparent;
 }
 
@@ -110,6 +110,16 @@ body:has(.is-home) {
 
 .title {
   font-weight: 400 !important;
+}
+
+.pager-link {
+  --vp-c-divider: transparent !important;
+  border-color: transparent !important;
+  transition: background-color 0.12s !important;
+}
+
+.pager-link:hover {
+  background-color: var(--vp-c-bg-alt);
 }
 
 h1,
