@@ -319,7 +319,7 @@ app.<span class="e-f">route</span>(<span class="e-s">"/admin"</span>, <span clas
   top: 30%;
   transform: translateY(-55%) perspective(1200px) rotateX(5deg) rotateY(-10deg);
   z-index: 2;
-  animation-delay: 200ms;
+  animation-delay: 300ms;
 }
 
 .pb-hero-shot--back {
@@ -329,7 +329,7 @@ app.<span class="e-f">route</span>(<span class="e-s">"/admin"</span>, <span clas
   transform: translateY(-35%) perspective(1200px) rotateX(5deg) rotateY(-10deg);
   z-index: 1;
   opacity: 0.45;
-  animation-delay: 300ms;
+  animation-delay: 200ms;
 }
 
 @media (max-width: 768px) {
