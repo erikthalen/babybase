@@ -1,10 +1,40 @@
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Atkinson+Hyperlegible+Mono:ital,wght@0,200..800;1,200..800&display=swap");
 
-/* Apply Picobase fonts site-wide */
+/* ── VitePress theme ────────────────────────────────── */
 :root {
+  /* Fonts */
   --vp-font-family-base: "Be Vietnam Pro", sans-serif;
   --vp-font-family-mono: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
   --vp-nav-logo-height: 14px;
+
+  /* Brand: faded teal */
+  --vp-c-brand-1: #0d9488;
+  --vp-c-brand-2: #0f766e;
+  --vp-c-brand-3: #14b8a6;
+  --vp-c-brand-soft: rgba(13, 148, 136, 0.1);
+
+  /* Sidebar: no background */
+  --vp-sidebar-bg-color: transparent;
+}
+
+.dark {
+  --vp-c-brand-1: #0d9488;
+  --vp-c-brand-2: #0f766e;
+  --vp-c-brand-3: #14b8a6;
+  --vp-c-brand-soft: rgba(13, 148, 136, 0.1);
+  --vp-sidebar-bg-color: transparent;
+}
+
+/* Sidebar: no border, no background */
+.VPSidebar {
+  background: transparent !important;
+  border-right: none !important;
+  box-shadow: none !important;
+}
+
+/* Outline (right sidebar): no background */
+.VPDocAsideOutline {
+  background: transparent !important;
 }
 
 body:has(.is-home) {
@@ -57,8 +87,43 @@ body:has(.is-home) {
   filter: brightness(100);
 }
 
+.VPNav {
+  border-bottom: none !important;
+}
+
+.VPNavBar {
+  border-bottom: none !important;
+  --vp-nav-border-color: transparent !important;
+  --vp-c-divider: transparent !important;
+  --vp-c-gutter: transparent !important;
+}
+
+.VPNavBar:not(.home.top) .content-body {
+  background: transparent !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.dark .VPNavBar:not(.home.top) .content-body {
+  /* background: rgba(8, 8, 8, 0.7) !important; */
+}
+
 .title {
   font-weight: 400 !important;
+}
+
+h1,
+h2 {
+  font-weight: 300 !important;
+}
+
+/* Sidebar group headers: label style */
+.VPSidebarItem.level-0 > .item > .text {
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  color: var(--vp-c-text-3) !important;
 }
 
 /* Match VitePress buttons to picobase button style */
