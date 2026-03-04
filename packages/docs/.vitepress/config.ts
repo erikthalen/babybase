@@ -12,7 +12,7 @@ export default defineConfig({
       "link",
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
     ],
-    ["link", { rel: "icon", href: "/picobase/favicon.svg" }],
+    ["link", { rel: "icon", href: "logo.svg" }],
   ],
 
   themeConfig: {
@@ -29,6 +29,10 @@ export default defineConfig({
             { text: "What is Picobase?", link: "/guide/what-is-picobase" },
             { text: "Getting Started", link: "/guide/getting-started" },
           ],
+        },
+        {
+          text: "Usage",
+          items: [{ text: "CLI", link: "/guide/cli" }],
         },
       ],
     },

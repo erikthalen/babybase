@@ -68,6 +68,62 @@ const _features = [
       </div>
     </section>
 
+    <!-- ── CLI spotlight ─────────────────────────────── -->
+    <section class="pb-cli">
+      <div class="pb-container">
+        <div class="pb-cli-inner">
+          <div class="pb-cli-copy">
+            <p class="pb-cli-eyebrow">Zero setup</p>
+            <h2 class="pb-cli-heading">One command.<br />Browser opens.</h2>
+            <p class="pb-cli-desc">
+              No config file. No server to write. Point it at any
+              <code>sqlite</code> file and you're in.
+            </p>
+            <a class="pb-btn-primary pb-cli-link" href="/picobase/guide/cli"
+              >CLI reference
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                <path d="M5 12l14 0" />
+                <path d="M15 16l4 -4" />
+                <path d="M15 8l4 4" />
+              </svg>
+            </a>
+          </div>
+          <div class="pb-terminal" aria-hidden="true">
+            <div class="pb-terminal-bar">
+              <span class="pb-dot"></span>
+              <span class="pb-dot"></span>
+              <span class="pb-dot"></span>
+              <span class="pb-terminal-title">terminal</span>
+            </div>
+            <pre
+              class="pb-terminal-body"
+            ><span class="t-prompt">$ </span><span class="t-cmd">npx picobase</span><span class="t-arg"> ./data.db</span>
+
+<span class="t-logo">╭─╮  ╷  ╭─  ╭─╮  ╷    ╭─╮  ╭─╮  ╭─╮
+├─╯  │  │   │ │  ├─╮  ╭─┤  ╰─╮  ├─
+╵    ╵  ╰─  ╰─╯  ╰─╯  ╰─╯  ╰─╯  ╰─╯</span>
+
+<span class="t-dim">  Server started on port </span><span class="t-url">3000</span><span class="t-dim">.</span>
+<span class="t-dim">  Browse your database at </span><span class="t-url">http://localhost:3000</span>
+
+<span class="t-dim">  database  </span><span class="t-muted">./data.db</span>
+<span class="t-dim">  storage   </span><span class="t-muted">./.picobase/storage</span></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Features ──────────────────────────────────── -->
     <section class="pb-features" aria-label="Features">
       <div class="pb-container">
@@ -126,7 +182,7 @@ const _features = [
   --border-mid: #2a2a2a;
   --text: #efefef;
   --text-muted: #777777;
-  --text-dim: #2e2e2e;
+  --text-dim: #a1a1a1;
   --accent: #2dd4bf;
   --accent-dim: rgba(45, 212, 191, 0.06);
   --accent-glow: rgba(45, 212, 191, 0.22);
@@ -440,6 +496,127 @@ const _features = [
 @media (max-width: 600px) {
   .pb-features-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ── CLI spotlight ───────────────────────────────────── */
+.pb-cli {
+  padding: 3rem 1.5rem 5rem;
+}
+
+.pb-cli-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.pb-cli-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.7;
+  margin: 0 0 1rem;
+}
+
+.pb-cli-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0 0 1.125rem;
+}
+
+.pb-cli-desc {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0 0 1.75rem;
+  font-weight: 300;
+}
+
+.pb-cli-desc code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+}
+
+.pb-cli-link {
+  display: inline-flex;
+}
+
+.pb-terminal {
+  border-radius: 12px;
+  border: 1px solid var(--border-mid);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+.pb-terminal-bar {
+  background: var(--bg-elevated);
+  padding: 0.625rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.pb-terminal-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-dim);
+  margin-left: 0.5rem;
+  letter-spacing: 0.04em;
+}
+
+.pb-terminal-body {
+  background: var(--bg-card);
+  margin: 0;
+  padding: 1.25rem 1.5rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.t-prompt {
+  color: var(--text-dim);
+}
+.t-cmd {
+  color: var(--text);
+}
+.t-arg {
+  color: var(--accent);
+  opacity: 0.85;
+}
+.t-logo {
+  color: var(--accent);
+}
+.t-dim {
+  color: var(--text-dim);
+}
+.t-url {
+  color: var(--accent);
+}
+.t-muted {
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .pb-cli-inner {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
   }
 }
 

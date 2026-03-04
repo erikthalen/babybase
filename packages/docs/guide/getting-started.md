@@ -3,25 +3,27 @@
 ## Prerequisites
 
 - [Node.js](https://nodejs.org) v22 or later
-- A Hono server
 
-## Installation
+## Quickstart with the CLI
 
-Install Picobase directly from GitHub:
+The fastest way to get started — no installation needed:
+
+```bash
+npx picobase ./my-database.db
+```
+
+Your browser will open automatically. See the [CLI guide](/guide/cli) for all options.
+
+## Embedding in a Hono server
+
+If you want Picobase alongside an existing app, install it as a dependency:
 
 ```bash
 pnpm add github:erikthalen/picobase
-```
-
-You'll also need Hono and the Node.js adapter if you don't have them already:
-
-```bash
 pnpm add hono @hono/node-server
 ```
 
-## Adding Picobase to your server
-
-Mount Picobase as a route on your existing Hono app:
+Then mount it as a route:
 
 ```ts
 import { serve } from "@hono/node-server";
@@ -35,12 +37,13 @@ app.route("/pico", definePicobase({ database: "./my-app.db" }));
 serve(app);
 ```
 
-Open `http://localhost:3000` in your browser to access the GUI.
+Open `http://localhost:3000/pico` in your browser to access the GUI.
 
 ## Configuration
 
-| Option          | Type     | Description                                  |
-| --------------- | -------- | -------------------------------------------- |
-| `database`      | `string` | Path to your `.db` or `.sqlite` file         |
-| `migrationsDir` | `string` | Directory for `.sql` migration files         |
-| `backupsDir`    | `string` | Directory where automatic backups are stored |
+| Option          | Type     | Default                    | Description                                         |
+| --------------- | -------- | -------------------------- | --------------------------------------------------- |
+| `database`      | `string` | —                          | Path to your `.db` or `.sqlite` file (required)     |
+| `basePath`      | `string` | `"/"`                      | URL prefix when mounted at a sub-path               |
+| `migrationsDir` | `string` | `./.picobase/migrations`   | Directory for `.sql` migration files                |
+| `storageDir`    | `string` | `./.picobase/storage`      | Directory where database backups are stored         |

@@ -1,6 +1,6 @@
 # What is Picobase?
 
-Picobase is a lightweight SQLite database manager with a browser-based GUI. Point it at any `.sqlite` file and get an instant, clean interface for browsing tables, inspecting schemas, and editing data — no setup, no cloud, no friction.
+Picobase is a lightweight SQLite database manager with a browser-based GUI. Point it at any `sqlite` file and get an instant, clean interface for browsing tables, inspecting schemas, and editing data — no setup, no cloud, no friction.
 
 ## What it gives you
 
@@ -12,7 +12,7 @@ Picobase is a lightweight SQLite database manager with a browser-based GUI. Poin
 ## When to reach for it
 
 - Inspecting your app's database during local development
-- Exploring an unfamiliar `.sqlite` file
+- Exploring an unfamiliar `sqlite` file
 - Quickly editing seed data or checking query results while prototyping
 
 ## How it works
