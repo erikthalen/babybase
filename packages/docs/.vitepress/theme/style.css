@@ -12,9 +12,6 @@
   --vp-c-brand-2: #0f766e;
   --vp-c-brand-3: #14b8a6;
   --vp-c-brand-soft: rgba(13, 148, 136, 0.1);
-
-  /* Sidebar: no background */
-  --vp-sidebar-bg-color: transparent;
 }
 
 .dark {
@@ -22,12 +19,22 @@
   --vp-c-brand-2: #0f766e;
   --vp-c-brand-3: #14b8a6;
   --vp-c-brand-soft: rgba(13, 148, 136, 0.1);
-  --vp-sidebar-bg-color: transparent;
+}
+
+@media (min-width: 768px) {
+  :root {
+    /* Sidebar: no background */
+    --vp-sidebar-bg-color: transparent;
+  }
+
+  .dark {
+    --vp-sidebar-bg-color: transparent;
+  }
 }
 
 /* Sidebar: no border, no background */
 .VPSidebar {
-  background: transparent !important;
+  /* background: transparent !important; */
   border-right: none !important;
   box-shadow: none !important;
 }
@@ -80,6 +87,8 @@ body:has(.is-home) {
 
 .VPNavBar:not(.has-sidebar) {
   background: transparent !important;
+  position: fixed;
+  width: 100vw;
 }
 
 .VPNavBar:not(.has-sidebar) .divider {
@@ -92,13 +101,14 @@ body:has(.is-home) {
 }
 
 .VPNavBar {
+  transition: all 200ms !important;
   border-bottom: none !important;
   --vp-nav-border-color: transparent !important;
   --vp-c-divider: transparent !important;
   --vp-c-gutter: transparent !important;
 }
 
-.VPNavBar:not(.home.top) .content-body {
+.VPNavBar:not(.home.top) {
   background: transparent !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
@@ -108,8 +118,35 @@ body:has(.is-home) {
   /* background: rgba(8, 8, 8, 0.7) !important; */
 }
 
+/* Show nav links on mobile instead of hamburger */
+@media (max-width: 768px) {
+  .VPNavBarHamburger {
+    display: none !important;
+  }
+
+  .VPNavBarMenu {
+    display: flex !important;
+  }
+}
+
+.VPNavBarSocialLinks {
+  display: flex !important;
+}
+
+.VPNavBarExtra {
+  display: none !important;
+}
+
+.wrapper {
+  padding: 0 24px !important;
+}
+
 .title {
   font-weight: 400 !important;
+}
+
+.appearance + .social-links::before {
+  content: none !important;
 }
 
 .pager-link {

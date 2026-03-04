@@ -625,6 +625,46 @@ const _features = [
   }
 }
 
+@media (max-width: 480px) {
+  .pb-container {
+    padding: 0;
+  }
+
+  .pb-hero {
+    padding: 10rem 1rem 3rem;
+  }
+
+  .pb-features {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .pb-feature {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .pb-cli {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .pb-preview {
+    padding: 0 1rem 4rem;
+  }
+
+  .pb-install {
+    padding: 2rem 1rem 7rem;
+  }
+
+  .pb-install-code {
+    padding: 0.875rem 1.25rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .pb-install-code code {
+    font-size: 0.8125rem;
+  }
+}
+
 /* ── Install ─────────────────────────────────────────── */
 .pb-install {
   padding: 2rem 1.5rem 9rem;

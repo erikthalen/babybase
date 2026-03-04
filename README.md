@@ -24,43 +24,21 @@
 
 ---
 
-Most database tools are designed for teams, cloud accounts, and enterprise scale. Babybase is designed for the opposite: a single file, on your machine, visible in your browser. No sign-up. No infra. No monthly bill.
+Babybase is a SQLite admin panel for your existing Node.js app. One command and your browser opens. No sign-up, no config file, no infra.
 
-It mounts directly into your existing server as a route — like adding `/baby` to your app — and gives you a polished interface to explore your schema, browse rows, run migrations, and manage backups. Everything you'd expect from a proper database GUI, with none of the overhead.
+## Quick look
 
-## Why SQLite
-
-SQLite is the most deployed database engine in the world, and for good reason. It is a single file on disk. There is no server to run, no connection pool to configure, no daemon to crash at 3am. Your entire database is a file you can copy, email, or open with any tool.
-
-For a vast category of projects — internal tools, personal apps, side projects, small SaaS products — SQLite is not a compromise. It is the right choice. Fast, reliable, zero-maintenance, and universally supported. The only thing it was missing was a nice UI.
-
-## How it compares
-
-Babybase occupies a different niche than the tools you may already know:
-
-|                      | Babybase                      | Supabase                   | PocketBase       | Prisma Studio   |
-| -------------------- | ----------------------------- | -------------------------- | ---------------- | --------------- |
-| **Hosting**          | Your server                   | Supabase cloud / self-host | Separate binary  | Local dev only  |
-| **Database**         | Your SQLite file              | PostgreSQL                 | Own SQLite       | Any (via ORM)   |
-| **Auth / API layer** | None — bring your own         | Built-in                   | Built-in         | None            |
-| **Footprint**        | A library import              | Full platform              | Separate process | Dev dependency  |
-| **Best for**         | Existing apps that use SQLite | Greenfield projects        | Rapid prototypes | Prisma projects |
-
-Supabase and PocketBase are full platforms — they bring their own auth, storage, realtime, and API generation. That is powerful, but it also means they own your architecture. Babybase does one thing: give you a window into your database. Your app, your data model, your rules — Babybase just makes it visible.
-
-## Self-hosting
-
-Because Babybase is a library rather than a service, "self-hosting" is just running your app. There is no separate container to manage, no port to expose, no admin password to rotate.
-
-Deploy your Node.js application the way you normally would — on a VPS, a container platform, Fly.io, Railway, Render, or a bare server — and Babybase comes along for the ride. If you want to restrict access, put your existing auth middleware in front of the `/baby` route. You already own the server, so you already own the access controls.
-
-```ts
-// Protect with whatever auth you already have
-app.use("/baby/*", yourAuthMiddleware);
-app.route("/baby", defineBabybase({ database: "./app.db" }));
+```sh
+npx babybase ./my-database.db
 ```
 
-## Getting started
+That's it. Your browser opens automatically.
+
+Explore your schema, browse rows, run migrations, and manage backups — all from the UI.
+
+## Embed in your app
+
+Mount it as a route inside your existing server:
 
 ```ts
 import { serve } from "@hono/node-server";
@@ -74,4 +52,17 @@ app.route("/baby", defineBabybase({ database: "./my-app.db" }));
 serve(app);
 ```
 
-Then open **http://localhost:3000/baby** in your browser.
+Protect it with whatever auth you already have:
+
+```ts
+app.use("/baby/*", yourAuthMiddleware);
+app.route("/baby", defineBabybase({ database: "./app.db" }));
+```
+
+## Self-hosting
+
+Because Babybase is a library, self-hosting is just running your app. Deploy the way you normally would — Fly.io, Railway, a VPS, a bare server — and Babybase comes along for the ride.
+
+## Why SQLite
+
+SQLite is a single file on disk. No server to run, no connection pool to configure. For internal tools, personal apps, and small projects it is often the right choice — fast, reliable, zero-maintenance. Babybase gives it a proper UI.
