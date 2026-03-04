@@ -1,9 +1,14 @@
+<br>
+<br>
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/logo-white.png">
     <img src=".github/logo-black.png" alt="picobase" height="48" />
   </picture>
 </p>
+
+<br>
 
 <p align="center">
   A lightweight, self-hosted SQLite admin panel you mount inside your own server.
