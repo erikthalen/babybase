@@ -553,7 +553,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
             @keyframes toast-in {
               from {
                 opacity: 0;
-                transform: translateY(-0.5rem);
+                transform: translateY(0.5rem);
               }
               to {
                 opacity: 1;
@@ -583,7 +583,6 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
             .toast:first-child {
               pointer-events: all;
               z-index: 3;
-              transform: translateY(0);
             }
             /* second — peeks below */
             .toast:nth-child(2) {
@@ -596,7 +595,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               transform: translateY(-8px);
             }
             /* rest — hidden but still in flow */
-            .toast:nth-child(n+4) {
+            .toast:nth-child(n + 4) {
               z-index: 0;
               transform: translateY(-12px);
               opacity: 0;
@@ -700,7 +699,13 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
           ${raw(navHtml)}
           <main id="main">${raw(content)}</main>
           <div id="toast-container">
-            <button id="toast-clear-all" onclick="document.querySelectorAll('#toast-container .toast').forEach(t=>t.remove())" aria-label="Clear all notifications">Clear all</button>
+            <button
+              id="toast-clear-all"
+              onclick="document.querySelectorAll('#toast-container .toast').forEach(t=>t.remove())"
+              aria-label="Clear all notifications"
+            >
+              Clear all
+            </button>
           </div>
         </body>
       </html>`,
@@ -766,61 +771,76 @@ export function nav({
       </svg>
     </div>
 
-    <nav id="floating-nav" class="floating-nav" style="view-transition-name: floating-nav">
-      ${raw(hasDatabase ? String(link(
-        "/schema",
-        "Schema",
-        "schema",
-        html`<svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path
-            d="M3 17a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"
-          />
-          <path
-            d="M15 17a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"
-          />
-          <path
-            d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"
-          />
-          <path d="M6 15v-1a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v1" />
-          <path d="M12 9l0 3" />
-        </svg>`.toString(),
-        "nav-schema",
-      )) : "")}
-      ${raw(hasDatabase ? String(link(
-        "/migrations",
-        "Migrations",
-        "migrations",
-        html`<svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-          <path d="M3 8l4 -4l4 4" />
-          <path d="M7 4l0 9" />
-          <path d="M13 16l4 4l4 -4" />
-          <path d="M17 10l0 10" />
-        </svg>`.toString(),
-        "nav-migrations",
-      )) : "")}
-
+    <nav
+      id="floating-nav"
+      class="floating-nav"
+      style="view-transition-name: floating-nav"
+    >
+      ${raw(
+        hasDatabase
+          ? String(
+              link(
+                "/schema",
+                "Schema",
+                "schema",
+                html`<svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path
+                    d="M3 17a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"
+                  />
+                  <path
+                    d="M15 17a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"
+                  />
+                  <path
+                    d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"
+                  />
+                  <path d="M6 15v-1a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v1" />
+                  <path d="M12 9l0 3" />
+                </svg>`.toString(),
+                "nav-schema",
+              ),
+            )
+          : "",
+      )}
+      ${raw(
+        hasDatabase
+          ? String(
+              link(
+                "/migrations",
+                "Migrations",
+                "migrations",
+                html`<svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                  <path d="M3 8l4 -4l4 4" />
+                  <path d="M7 4l0 9" />
+                  <path d="M13 16l4 4l4 -4" />
+                  <path d="M17 10l0 10" />
+                </svg>`.toString(),
+                "nav-migrations",
+              ),
+            )
+          : "",
+      )}
       ${link(
         "/storage",
         "Storage",
@@ -872,8 +892,18 @@ export function navElement(props: NavProps): string {
   const migrationsIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 8l4 -4l4 4"/><path d="M7 4l0 9"/><path d="M13 16l4 4l4 -4"/><path d="M17 10l0 10"/></svg>`;
   const storageIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6c0 1.657 3.582 3 8 3s8 -1.343 8 -3s-3.582 -3 -8 -3s-8 1.343 -8 3"/><path d="M4 6v6c0 1.657 3.582 3 8 3c1.118 0 2.183 -.086 3.15 -.241"/><path d="M20 12v-6"/><path d="M4 12v6c0 1.657 3.582 3 8 3c.157 0 .312 -.002 .466 -.005"/><path d="M16 19h6"/><path d="M19 16l3 3l-3 3"/></svg>`;
 
-  const schemaLink = hasDatabase ? link("/schema", "Schema", "schema", schemaIcon, "nav-schema") : "";
-  const migrationsLink = hasDatabase ? link("/migrations", "Migrations", "migrations", migrationsIcon, "nav-migrations") : "";
+  const schemaLink = hasDatabase
+    ? link("/schema", "Schema", "schema", schemaIcon, "nav-schema")
+    : "";
+  const migrationsLink = hasDatabase
+    ? link(
+        "/migrations",
+        "Migrations",
+        "migrations",
+        migrationsIcon,
+        "nav-migrations",
+      )
+    : "";
   const storageLink = link("/storage", "Storage", "storage", storageIcon);
 
   return `<nav id="floating-nav" class="floating-nav" style="view-transition-name: floating-nav">${schemaLink}${migrationsLink}${storageLink}</nav>`;

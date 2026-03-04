@@ -5,6 +5,7 @@
   "bin": {
     "babybase": "./cli.js"
   },
+  "files": ["cli.js"],
   "scripts": {
     "start": "node cli.js"
   },

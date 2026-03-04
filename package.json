@@ -7,9 +7,13 @@
     "start": "pnpm -r --parallel start",
     "seed": "pnpm -r seed",
     "format": "biome format --write .",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "changeset": "changeset",
+    "version": "changeset version && pnpm install --no-frozen-lockfile",
+    "release": "pnpm --filter @babybase/core build && changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.5"
+    "@biomejs/biome": "2.4.5",
+    "@changesets/cli": "^2.27.0"
   }
 }
