@@ -1,12 +1,12 @@
 import { html, raw } from "hono/html";
-import type { TableSchema, DesiredColumn } from "./queries.ts";
-import { tableBox, tableBoxStyles } from "./components/table-box.ts";
-import { svgRelations } from "./components/svg-relations.ts";
 import { cameraScript } from "./components/camera-script.ts";
-import { zoomControls } from "./components/zoom-controls.ts";
 import { createTableDialog } from "./components/create-table-dialog.ts";
 import { editTableDialogShell } from "./components/edit-table-dialog.ts";
 import { editsDialogShell, schemaActions } from "./components/edits-dialog.ts";
+import { svgRelations } from "./components/svg-relations.ts";
+import { tableBox, tableBoxStyles } from "./components/table-box.ts";
+import { zoomControls } from "./components/zoom-controls.ts";
+import type { DesiredColumn, TableSchema } from "./queries.ts";
 
 const css = String.raw;
 
@@ -92,44 +92,6 @@ const diagramStyles = css`
   .schema-actions {
     display: flex;
     gap: 0.5rem;
-  }
-  .ctrl-tooltip {
-    position: relative;
-  }
-  .ctrl-tooltip::before {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: calc(100% + 7px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 400;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 100;
-  }
-  .ctrl-tooltip::after {
-    content: '';
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-bottom-color: #000;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 100;
-  }
-  .ctrl-tooltip:hover::before,
-  .ctrl-tooltip:hover::after {
-    opacity: 1;
   }
   .er-diagram-empty {
     display: flex;
@@ -363,7 +325,7 @@ export function erDiagramView(
             <div class="ctrl-group">
               <button
                 id="reset-view"
-                class="zoom-btn ctrl-tooltip"
+                class="zoom-btn"
                 data-tooltip="Reset view"
               >
                 <svg
@@ -406,7 +368,7 @@ export function erDiagramView(
               ${schema.map((t) =>
                 tableBox(
                   t,
-                  positions[t.name]!,
+                  positions[t.name] ?? { x: 0, y: 0, h: 0 },
                   BOX_W,
                   BOX_HEADER_H,
                   ROW_H,

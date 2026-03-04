@@ -74,7 +74,9 @@ const rowsStyles = css`
     border-radius: 7px;
     color: var(--pb-text-muted);
     text-decoration: none;
-    transition: background 0.12s, color 0.12s;
+    transition:
+      background 0.12s,
+      color 0.12s;
   }
   #table-tabs-bar .ctrl-group a:hover {
     background: var(--pb-nav-hover);
@@ -91,7 +93,7 @@ const rowsStyles = css`
   }
   .table-tabs-wrap::before,
   .table-tabs-wrap::after {
-    content: '';
+    content: "";
     position: absolute;
     top: 3px;
     bottom: 3px;
@@ -111,8 +113,12 @@ const rowsStyles = css`
     border-radius: 0 7px 7px 0;
     background: linear-gradient(to left, var(--pb-surface), transparent);
   }
-  .table-tabs-wrap.fade-left::before { opacity: 1; }
-  .table-tabs-wrap.fade-right::after { opacity: 1; }
+  .table-tabs-wrap.fade-left::before {
+    opacity: 1;
+  }
+  .table-tabs-wrap.fade-right::after {
+    opacity: 1;
+  }
   #table-tabs {
     position: static;
     background: none;
@@ -142,44 +148,6 @@ const rowsStyles = css`
   #table-tabs a.active {
     background: rgba(255, 255, 255, 0.1);
     color: #fafafa;
-  }
-  .ctrl-tooltip {
-    position: relative;
-  }
-  .ctrl-tooltip::before {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: calc(100% + 7px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 400;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 100;
-  }
-  .ctrl-tooltip::after {
-    content: '';
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-bottom-color: #000;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 100;
-  }
-  .ctrl-tooltip:hover::before,
-  .ctrl-tooltip:hover::after {
-    opacity: 1;
   }
   .rows-container {
     padding: 4.5rem 1.5rem 6rem;
@@ -239,10 +207,7 @@ export function tableListView(tables: string[], basePath: string): string {
           <p class="tables-empty-body">
             Create your first table in the Schema view to start storing data.
           </p>
-          <button
-            class="primary"
-            data-on:click="@get('${base}/schema')"
-          >
+          <button class="primary" data-on:click="@get('${base}/schema')">
             Go to Schema
           </button>
         </div>
@@ -284,7 +249,7 @@ export function buildTabBar(
     .join("");
   return `<div id="table-tabs-bar">
   <div class="ctrl-group">
-    <a href="${base}/schema" data-on:click="@get('${base}/schema')" class="ctrl-tooltip" data-tooltip="Schema" aria-label="Schema">
+    <a href="${base}/schema" data-on:click="@get('${base}/schema')" data-tooltip="Back to schemas" aria-label="Schema">
       <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l14 0"/><path d="M5 12l6 6"/><path d="M5 12l6 -6"/></svg>
     </a>
   </div>
@@ -376,7 +341,9 @@ export function buildRowsContainer(opts: {
     .map((c) => {
       if (c.pk) return `<td class="text-faint pk-cell">—</td>`;
       const hasDefault = c.dflt_value != null;
-      const placeholder = hasDefault ? `default: ${c.dflt_value}` : c.type || "text";
+      const placeholder = hasDefault
+        ? `default: ${c.dflt_value}`
+        : c.type || "text";
       const required = c.notnull && !hasDefault ? " required" : "";
       return `<td><input data-bind:${c.name} placeholder="${placeholder}"${required}></td>`;
     })
@@ -414,7 +381,17 @@ export function rowsView(opts: {
         ${raw(rowsStyles)}
       </style>
       ${raw(buildTabBar(tables, table, basePath))}
-      ${raw(buildRowsContainer({ table, columns, rows, page, total, limit, basePath }))}
+      ${raw(
+        buildRowsContainer({
+          table,
+          columns,
+          rows,
+          page,
+          total,
+          limit,
+          basePath,
+        }),
+      )}
     </div>`,
   );
 }

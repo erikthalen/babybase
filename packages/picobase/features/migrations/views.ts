@@ -107,36 +107,163 @@ const styles = css`
   #migration-editor {
     background: var(--pb-surface);
     border: 1px solid var(--pb-border);
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     width: 90%;
-    max-width: 500px;
+    max-width: 540px;
     color: inherit;
   }
+  #migration-editor::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+  }
   .migration-form-title {
-    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
   }
   .migration-label {
     display: block;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
   .migration-label-title {
-    font-size: 0.8rem;
+    display: block;
+    font-size: 0.6875rem;
     font-weight: 600;
+    color: var(--pb-text-muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.375rem;
+  }
+  .mig-description-input {
+    width: 100%;
+  }
+  .mig-filename-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--pb-syntax-bg);
+    border-radius: 6px;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+  .mig-filename-preview-label {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--pb-text-faint);
+    flex-shrink: 0;
+  }
+  .mig-filename-preview-value {
+    font-family: var(--pb-monospace);
+    font-size: 0.8rem;
+    color: var(--pb-syntax-string);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mig-filename-preview-value.placeholder {
+    color: var(--pb-text-faint);
+    font-style: italic;
   }
   .migration-sql {
-    font-family: monospace;
-    font-size: 0.85rem;
+    font-family: var(--pb-monospace);
+    font-size: 0.8rem;
+    width: 100%;
+    resize: vertical;
   }
   .migration-btn-row {
     display: flex;
     gap: 0.5rem;
+    margin-top: 1.25rem;
   }
   .new-migration-btn {
+  }
+  .mig-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    background: var(--pb-surface);
+    border: 1px solid var(--pb-border);
+    border-radius: 10px;
+    padding: 3px;
+  }
+  .mig-btn-group button {
+    border-color: transparent;
+    border-radius: 7px;
+  }
+  .mig-btn-group button:hover,
+  .mig-btn-group button.danger:hover {
+    border-color: transparent;
+  }
+  .mig-btn-group button + button {
+    position: relative;
+  }
+  .mig-btn-group button + button::before {
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--pb-border);
+  }
+  .mig-delete-confirm-dialog {
+    background: var(--pb-surface);
+    border: 1px solid var(--pb-border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    color: inherit;
+    width: 90%;
+    max-width: 420px;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+  }
+  .mig-delete-confirm-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+  }
+  .mig-delete-confirm-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  .mig-delete-confirm-body {
+    font-size: 0.875rem;
+    color: var(--pb-text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+  }
+  .mig-delete-confirm-name {
+    font-family: var(--pb-monospace);
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--pb-border);
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    display: block;
+    margin-bottom: 1rem;
+    word-break: break-all;
+  }
+  .mig-delete-confirm-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--pb-text-muted);
+    margin-bottom: 0.35rem;
+  }
+  .mig-delete-confirm-dialog input {
+    width: 100%;
+  }
+  .mig-delete-confirm-actions {
+    display: flex;
+    justify-content: end;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
   }
   .migrations-empty {
     display: flex;
@@ -169,6 +296,14 @@ const styles = css`
   }
 `;
 
+function getNextMigrationNumber(files: MigrationFile[]): string {
+  const nums = files
+    .map((f) => parseInt(f.name.match(/^(\d+)/)?.[1] ?? "0", 10))
+    .filter((n) => n > 0);
+  const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+  return next.toString().padStart(3, "0");
+}
+
 export function migrationsView(opts: {
   files: MigrationFile[];
   applied: string[];
@@ -177,19 +312,70 @@ export function migrationsView(opts: {
   const { files, applied, basePath } = opts;
   const base = basePath.replace(/\/$/, "");
   const appliedSet = new Set(applied);
+  const nextNum = getNextMigrationNumber(files);
 
   const hasPending = files.some((f) => !appliedSet.has(f.name));
 
+  const deleteDialog = html`
+    <dialog
+      id="mig-delete-confirm-dialog"
+      class="mig-delete-confirm-dialog"
+      closedby="any"
+    >
+      <h3 class="mig-delete-confirm-title">Delete migration</h3>
+      <p class="mig-delete-confirm-body">
+        This action cannot be undone. Type the filename to confirm:
+      </p>
+      <code
+        class="mig-delete-confirm-name"
+        data-text="$_migDeleteTarget"
+      ></code>
+      <span class="mig-delete-confirm-label">Filename</span>
+      <input
+        data-bind:_mig-delete-confirm
+        data-attr:placeholder="$_migDeleteTarget"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <div class="mig-delete-confirm-actions">
+        <form method="dialog">
+          <button type="submit" data-on:click="$_migDeleteConfirm=''">
+            Cancel
+          </button>
+        </form>
+        <button
+          class="danger"
+          data-attr:disabled="$_migDeleteConfirm !== $_migDeleteTarget"
+          data-on:click="@delete('${base}/migrations/' + $_migDeleteTarget); $_migDeleteTarget=''; $_migDeleteConfirm=''; document.getElementById('mig-delete-confirm-dialog').close()"
+        >
+          Delete
+        </button>
+      </div>
+    </dialog>
+  `;
+
   const dialog = html`
     <dialog id="migration-editor" closedby="any">
-      <div data-signals="{sql:'',filename:''}">
+      <div data-signals="{sql:'', filename:'', _description:''}">
         <h3 class="migration-form-title">New migration</h3>
         <label class="migration-label">
-          <span class="migration-label-title">
-            Filename (e.g. 002_add_posts.sql)
-          </span>
-          <input data-bind:filename placeholder="002_description.sql" />
+          <span class="migration-label-title">Description</span>
+          <input
+            class="mig-description-input"
+            data-bind:_description
+            data-on:input="const s = evt.target.value.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); $filename = s ? '${nextNum}_' + s + '.sql' : ''"
+            placeholder="e.g. add users table"
+            autocomplete="off"
+            spellcheck="false"
+          />
         </label>
+        <div class="mig-filename-preview">
+          <span class="mig-filename-preview-label">Filename</span>
+          <code
+            class="mig-filename-preview-value"
+            data-text="$filename || '${nextNum}_description.sql'"
+          ></code>
+        </div>
         <label class="migration-label">
           <span class="migration-label-title">SQL</span>
           <textarea
@@ -200,12 +386,17 @@ export function migrationsView(opts: {
           ></textarea>
         </label>
         <div class="migration-btn-row">
-          <button class="primary" data-on:click="@post('${base}/migrations')">
+          <button
+            class="primary"
+            data-attr:disabled="!$filename"
+            data-on:click="document.getElementById('migration-editor').close(); @post('${base}/migrations')"
+          >
             Save
           </button>
           <button
             class="primary"
-            data-on:click="@post('${base}/migrations/save-and-run')"
+            data-attr:disabled="!$filename"
+            data-on:click="document.getElementById('migration-editor').close(); @post('${base}/migrations/save-and-run')"
           >
             Save &amp; Run
           </button>
@@ -234,11 +425,14 @@ export function migrationsView(opts: {
 
   if (files.length === 0) {
     return String(html`
-      <div id="migrations-view">
+      <div
+        id="migrations-view"
+        data-signals="{_migDeleteTarget:'', _migDeleteConfirm:''}"
+      >
         <style>
           ${styles}
         </style>
-        ${dialog} ${sqlDialog}
+        ${dialog} ${sqlDialog} ${deleteDialog}
         <div class="migrations-empty">
           <div class="migrations-empty-icon">
             <svg
@@ -269,7 +463,7 @@ export function migrationsView(opts: {
           </p>
           <button
             class="primary"
-            data-on:click="document.getElementById('migration-editor').showModal()"
+            data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -304,16 +498,20 @@ export function migrationsView(opts: {
         ? `<button class="primary" data-on:click="@post('${base}/migrations/${encodeURIComponent(f.name)}/run')">Run</button>`
         : "";
       const viewBtn = `<button data-on:click="document.getElementById('migration-sql-dialog-title').textContent='${f.name.replace(/'/g, "\\'")}'; document.getElementById('migration-sql-dialog').showModal(); @get('${base}/migrations/${encodeURIComponent(f.name)}')">View</button>`;
-      return `<tr><td class="migration-filename">${f.name}</td><td>${statusBadge}</td><td style="display:flex;gap:4px;justify-content:flex-end">${viewBtn}${runBtn}</td></tr>`;
+      const deleteBtn = `<button class="danger" data-on:click="$_migDeleteTarget='${f.name}'; $_migDeleteConfirm=''; document.getElementById('mig-delete-confirm-dialog').showModal()">Delete</button>`;
+      return `<tr><td class="migration-filename">${f.name}</td><td>${statusBadge}</td><td style="justify-content:flex-end"><div class="mig-btn-group">${runBtn}${viewBtn}${deleteBtn}</div></td></tr>`;
     })
     .join("\n");
 
   return String(html`
-    <div id="migrations-view">
+    <div
+      id="migrations-view"
+      data-signals="{_migDeleteTarget:'', _migDeleteConfirm:''}"
+    >
       <style>
         ${styles}
       </style>
-      ${dialog} ${sqlDialog}
+      ${dialog} ${sqlDialog} ${deleteDialog}
       <div class="migrations-controls">
         ${raw(
           hasPending
@@ -322,7 +520,7 @@ export function migrationsView(opts: {
         )}
         <div class="ctrl-group">
           <button
-            data-on:click="document.getElementById('migration-editor').showModal()"
+            data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"
           >
             New migration
           </button>

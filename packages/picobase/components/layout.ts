@@ -564,6 +564,50 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               border-color: transparent;
               color: var(--pb-text-muted);
             }
+            .toast-error {
+              border-color: rgba(239, 68, 68, 0.4);
+            }
+            .toast-error .toast-title {
+              color: var(--pb-danger);
+            }
+            [data-tooltip] {
+              position: relative;
+            }
+            [data-tooltip]::before {
+              content: attr(data-tooltip);
+              position: absolute;
+              top: calc(100% + 7px);
+              left: 50%;
+              transform: translateX(-50%);
+              background: #000;
+              color: #fff;
+              padding: 4px 8px;
+              border-radius: 6px;
+              font-size: 11px;
+              font-weight: 400;
+              white-space: nowrap;
+              pointer-events: none;
+              opacity: 0;
+              transition: opacity 0.15s;
+              z-index: 100;
+            }
+            [data-tooltip]::after {
+              content: '';
+              position: absolute;
+              top: calc(100% + 2px);
+              left: 50%;
+              transform: translateX(-50%);
+              border: 4px solid transparent;
+              border-bottom-color: #000;
+              pointer-events: none;
+              opacity: 0;
+              transition: opacity 0.15s;
+              z-index: 100;
+            }
+            [data-tooltip]:hover::before,
+            [data-tooltip]:hover::after {
+              opacity: 1;
+            }
           </style>
         </head>
         <body>
@@ -577,7 +621,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
 
 interface NavProps {
   basePath: string;
-  activeSection: "schema" | "migrations" | "backups";
+  activeSection: "schema" | "migrations" | "storage";
   tables?: string[];
 }
 
@@ -673,9 +717,9 @@ export function nav({ basePath, activeSection }: NavProps): string {
         </svg>`.toString(),
       )}
       ${link(
-        "/backups",
-        "Backups",
-        "backups",
+        "/storage",
+        "Storage",
+        "storage",
         html`<svg
           xmlns="http://www.w3.org/2000/svg"
           width="14"
@@ -702,8 +746,13 @@ export function nav({ basePath, activeSection }: NavProps): string {
   `);
 }
 
-export function toastHtml(title: string, body: string): string {
-  return `<div class="toast" role="alert">
+export function toastHtml(
+  title: string,
+  body: string,
+  variant?: "error",
+): string {
+  const cls = variant === "error" ? " toast-error" : "";
+  return `<div class="toast${cls}" role="alert">
     <div class="toast-content">
       <div class="toast-title">${title}</div>
       <div class="toast-body">${body}</div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const features = [
+const _features = [
   {
     num: "01",
     title: "Self-hosted",
@@ -72,7 +72,7 @@ const features = [
     <section class="pb-features" aria-label="Features">
       <div class="pb-container">
         <div class="pb-features-grid">
-          <div v-for="f in features" :key="f.num" class="pb-feature">
+          <div v-for="f in _features" :key="f.num" class="pb-feature">
             <span class="pb-feature-num" aria-hidden="true">{{ f.num }}</span>
             <h3 class="pb-feature-title">{{ f.title }}</h3>
             <p class="pb-feature-desc">{{ f.desc }}</p>

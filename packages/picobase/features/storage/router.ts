@@ -6,13 +6,13 @@ import { respond, sseAction } from "../../components/sse.ts";
 import { listTables } from "../../db/schema-queries.ts";
 import type { AppEnv } from "../../index.ts";
 import {
+  type BackupEntry,
   createBackup,
   deleteBackup,
   listBackups,
   saveUploadedDb,
-  type BackupEntry,
 } from "./queries.ts";
-import { backupsListRows, backupsView } from "./views.ts";
+import { storageListRows, storageView } from "./views.ts";
 
 function makeOriginalEntry(dbPath: string): BackupEntry {
   let size = 0;
@@ -24,10 +24,16 @@ function makeOriginalEntry(dbPath: string): BackupEntry {
   } catch {
     /* file may not exist yet */
   }
-  return { name: basename(dbPath), path: dbPath, size, createdAt, type: "original" };
+  return {
+    name: basename(dbPath),
+    path: dbPath,
+    size,
+    createdAt,
+    type: "original",
+  };
 }
 
-export function createBackupsRouter(opts: {
+export function createStorageRouter(opts: {
   originalDatabase: string;
   mountDb: (path: string) => void;
 }): Hono<AppEnv> {
@@ -39,11 +45,18 @@ export function createBackupsRouter(opts: {
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
     const tables = listTables(db);
-    const backups = [makeOriginalEntry(originalDatabase), ...listBackups(config.backupsDir)];
-    const content = backupsView({ backups, basePath: base, activeDatabase: config.database });
-    const navHtml = nav({ basePath: base, activeSection: "backups", tables });
+    const entries = [
+      makeOriginalEntry(originalDatabase),
+      ...listBackups(config.storageDir),
+    ];
+    const content = storageView({
+      entries,
+      basePath: base,
+      activeDatabase: config.database,
+    });
+    const navHtml = nav({ basePath: base, activeSection: "storage", tables });
     return respond(c, {
-      fullPage: () => layout({ title: "Backups", nav: navHtml, content }),
+      fullPage: () => layout({ title: "Storage", nav: navHtml, content }),
       fragment: () => `<main id="main">${content}</main>`,
     });
   });
@@ -52,11 +65,14 @@ export function createBackupsRouter(opts: {
   app.post("/", async (c) => {
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
-    const backupName = createBackup(config.database, config.backupsDir);
-    const backups = [makeOriginalEntry(originalDatabase), ...listBackups(config.backupsDir)];
+    const backupName = createBackup(config.database, config.storageDir);
+    const entries = [
+      makeOriginalEntry(originalDatabase),
+      ...listBackups(config.storageDir),
+    ];
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
-        `<main id="main">${backupsView({ backups, basePath: base, activeDatabase: config.database })}</main>`,
+        `<main id="main">${storageView({ entries, basePath: base, activeDatabase: config.database })}</main>`,
       );
       await patchElements(
         toastHtml("Backup created", `Saved as <code>${backupName}</code>.`),
@@ -74,7 +90,7 @@ export function createBackupsRouter(opts: {
       if (file instanceof File && file.size > 0) {
         const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const data = Buffer.from(await file.arrayBuffer());
-        saveUploadedDb(config.backupsDir, safe, data);
+        saveUploadedDb(config.storageDir, safe, data);
       }
     } catch {
       // ignore upload errors
@@ -88,14 +104,17 @@ export function createBackupsRouter(opts: {
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
     try {
-      deleteBackup(config.backupsDir, name);
+      deleteBackup(config.storageDir, name);
     } catch {
       // file already gone
     }
-    const backups = [makeOriginalEntry(originalDatabase), ...listBackups(config.backupsDir)];
+    const entries = [
+      makeOriginalEntry(originalDatabase),
+      ...listBackups(config.storageDir),
+    ];
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
-        `<tbody id="backups-list">${backupsListRows(backups, base, config.database)}</tbody>`,
+        `<tbody id="storage-list">${storageListRows(entries, base, config.database)}</tbody>`,
       );
     });
   });
@@ -105,17 +124,22 @@ export function createBackupsRouter(opts: {
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
-    const newPath = name === "~original"
-      ? originalDatabase
-      : join(config.backupsDir, name);
+    const newPath =
+      name === "~original" ? originalDatabase : join(config.storageDir, name);
     mountDb(newPath);
-    const backups = [makeOriginalEntry(originalDatabase), ...listBackups(config.backupsDir)];
+    const entries = [
+      makeOriginalEntry(originalDatabase),
+      ...listBackups(config.storageDir),
+    ];
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
-        `<main id="main">${backupsView({ backups, basePath: base, activeDatabase: config.database })}</main>`,
+        `<main id="main">${storageView({ entries, basePath: base, activeDatabase: config.database })}</main>`,
       );
       await patchElements(
-        toastHtml("Database mounted", `Now using <code>${basename(newPath)}</code>.`),
+        toastHtml(
+          "Database mounted",
+          `Now using <code>${basename(newPath)}</code>.`,
+        ),
         { selector: "#toast-container", mode: "append" },
       );
     });

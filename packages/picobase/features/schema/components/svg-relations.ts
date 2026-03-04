@@ -3,13 +3,21 @@ import type { TableSchema } from "../queries.ts";
 
 type Pos = Record<string, { x: number; y: number; h: number }>;
 
-function buildCornerPath(pts: Array<{ x: number; y: number }>, R: number): string {
+function buildCornerPath(
+  pts: Array<{ x: number; y: number }>,
+  R: number,
+): string {
   let d = `M${pts[0].x},${pts[0].y}`;
   for (let i = 1; i < pts.length - 1; i++) {
-    const prev = pts[i - 1], curr = pts[i], next = pts[i + 1];
-    const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y;
-    const dx2 = next.x - curr.x, dy2 = next.y - curr.y;
-    const len1 = Math.hypot(dx1, dy1), len2 = Math.hypot(dx2, dy2);
+    const prev = pts[i - 1],
+      curr = pts[i],
+      next = pts[i + 1];
+    const dx1 = curr.x - prev.x,
+      dy1 = curr.y - prev.y;
+    const dx2 = next.x - curr.x,
+      dy2 = next.y - curr.y;
+    const len1 = Math.hypot(dx1, dy1),
+      len2 = Math.hypot(dx2, dy2);
     if (len1 < 0.5 || len2 < 0.5) continue;
     const r = Math.min(R, len1 / 2, len2 / 2);
     d += ` L${curr.x - (dx1 / len1) * r},${curr.y - (dy1 / len1) * r}`;
@@ -19,27 +27,51 @@ function buildCornerPath(pts: Array<{ x: number; y: number }>, R: number): strin
   return d;
 }
 
-function isHBlocked(x1: number, x2: number, y: number, pos: Pos, BW: number): boolean {
-  const xl = Math.min(x1, x2), xr = Math.max(x1, x2);
+function isHBlocked(
+  x1: number,
+  x2: number,
+  y: number,
+  pos: Pos,
+  BW: number,
+): boolean {
+  const xl = Math.min(x1, x2),
+    xr = Math.max(x1, x2);
   return Object.values(pos).some(
-    (p) => xl < p.x + BW - 2 && xr > p.x + 2 && y > p.y + 2 && y < p.y + p.h - 2,
+    (p) =>
+      xl < p.x + BW - 2 && xr > p.x + 2 && y > p.y + 2 && y < p.y + p.h - 2,
   );
 }
 
-function isVBlocked(x: number, ya: number, yb: number, pos: Pos, BW: number): boolean {
-  const yt = Math.min(ya, yb), ybot = Math.max(ya, yb);
+function isVBlocked(
+  x: number,
+  ya: number,
+  yb: number,
+  pos: Pos,
+  BW: number,
+): boolean {
+  const yt = Math.min(ya, yb),
+    ybot = Math.max(ya, yb);
   return Object.values(pos).some(
-    (p) => x > p.x + 2 && x < p.x + BW - 2 && yt < p.y + p.h - 2 && ybot > p.y + 2,
+    (p) =>
+      x > p.x + 2 && x < p.x + BW - 2 && yt < p.y + p.h - 2 && ybot > p.y + 2,
   );
 }
 
 /** Returns the x of the primary vertical routing segment (vx for direct, cx for fold). */
 function computeVx(
-  fromX: number, fromY: number, toX: number, toY: number,
-  fromColIdx: number, toColIdx: number,
-  pos: Pos, BW: number, BH: number, RH: number,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  fromColIdx: number,
+  toColIdx: number,
+  pos: Pos,
+  BW: number,
+  BH: number,
+  RH: number,
 ): number {
-  const ST = 10, R = 16;
+  const ST = 10,
+    R = 16;
   const y1 = fromY + BH + fromColIdx * RH + RH / 2;
   const y2 = toY + BH + toColIdx * RH + RH / 2;
   const sh = toX >= fromX ? 1 : -1;
@@ -51,8 +83,10 @@ function computeVx(
     for (let i = 0; i < 20 && isVBlocked(cx, y1, y2, pos, BW); i++) cx += R * 2;
     return cx;
   }
-  const ax = px1 + sh * ST, bx = px2 - sh * ST;
-  const yMin = Math.min(y1, y2), yMax = Math.max(y1, y2);
+  const ax = px1 + sh * ST,
+    bx = px2 - sh * ST;
+  const yMin = Math.min(y1, y2),
+    yMax = Math.max(y1, y2);
   let vx = (ax + bx) / 2;
   for (let iter = 0; iter < 8; iter++) {
     for (const p of Object.values(pos)) {
@@ -61,16 +95,27 @@ function computeVx(
       }
     }
   }
-  return sh > 0 ? Math.max(ax + R, Math.min(bx - R, vx)) : Math.min(ax - R, Math.max(bx + R, vx));
+  return sh > 0
+    ? Math.max(ax + R, Math.min(bx - R, vx))
+    : Math.min(ax - R, Math.max(bx + R, vx));
 }
 
 function routePath(
-  fromX: number, fromY: number, toX: number, toY: number,
-  fromColIdx: number, toColIdx: number,
-  allPositions: Pos, BW: number, BH: number, RH: number,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number,
+  fromColIdx: number,
+  toColIdx: number,
+  allPositions: Pos,
+  BW: number,
+  BH: number,
+  RH: number,
   laneOffset: number,
 ): string {
-  const ST = 10, R = 16, MARGIN = 24;
+  const ST = 10,
+    R = 16,
+    MARGIN = 24;
   const y1 = fromY + BH + fromColIdx * RH + RH / 2;
   const y2 = toY + BH + toColIdx * RH + RH / 2;
   const sv = y2 >= y1 ? 1 : -1;
@@ -81,7 +126,8 @@ function routePath(
 
   if (Math.abs(fromX - toX) < 2 || willFold) {
     let cx = Math.max(fromX, toX) + BW + ST;
-    for (let i = 0; i < 20 && isVBlocked(cx, y1, y2, allPositions, BW); i++) cx += R * 2;
+    for (let i = 0; i < 20 && isVBlocked(cx, y1, y2, allPositions, BW); i++)
+      cx += R * 2;
     cx += laneOffset;
     const vertDist = Math.abs(y2 - y1);
     const r = Math.min(R, vertDist / 2);
@@ -92,8 +138,10 @@ function routePath(
     return d;
   }
 
-  const ax = px1 + sh * ST, bx = px2 - sh * ST;
-  const yMin = Math.min(y1, y2), yMax = Math.max(y1, y2);
+  const ax = px1 + sh * ST,
+    bx = px2 - sh * ST;
+  const yMin = Math.min(y1, y2),
+    yMax = Math.max(y1, y2);
 
   if (Math.abs(y2 - y1) < 2 && !isHBlocked(ax, bx, y1, allPositions, BW)) {
     return `M${px1},${y1} H${px2}`;
@@ -107,9 +155,10 @@ function routePath(
       }
     }
   }
-  vx = sh > 0
-    ? Math.max(ax + R, Math.min(bx - R, vx))
-    : Math.min(ax - R, Math.max(bx + R, vx));
+  vx =
+    sh > 0
+      ? Math.max(ax + R, Math.min(bx - R, vx))
+      : Math.min(ax - R, Math.max(bx + R, vx));
   vx += laneOffset;
 
   if (
@@ -118,7 +167,10 @@ function routePath(
     !isHBlocked(vx, bx, y2, allPositions, BW)
   ) {
     const r = Math.min(R, Math.abs(y2 - y1) / 2);
-    const c1x = vx - sh * r, c1y = y1 + sv * r, c2y = y2 - sv * r, c2x = vx + sh * r;
+    const c1x = vx - sh * r,
+      c1y = y1 + sv * r,
+      c2y = y2 - sv * r,
+      c2x = vx + sh * r;
     const s: string[] = [`M${px1},${y1}`, `H${ax}`];
     if (Math.abs(ax - c1x) > 0.5) s.push(`H${c1x}`);
     s.push(`Q${vx},${y1} ${vx},${c1y}`);
@@ -129,8 +181,10 @@ function routePath(
     return s.join(" ");
   }
 
-  const xLeft = Math.min(ax, bx) - R, xRight = Math.max(ax, bx) + R;
-  let topY = Infinity, botY = -Infinity;
+  const xLeft = Math.min(ax, bx) - R,
+    xRight = Math.max(ax, bx) + R;
+  let topY = Infinity,
+    botY = -Infinity;
   for (const p of Object.values(allPositions)) {
     if (p.x + BW > xLeft && p.x < xRight) {
       if (p.y < topY) topY = p.y;
@@ -142,11 +196,19 @@ function routePath(
   let safeY =
     Math.abs(y1 - safeYAbove) + Math.abs(y2 - safeYAbove) <=
     Math.abs(y1 - safeYBelow) + Math.abs(y2 - safeYBelow)
-      ? safeYAbove : safeYBelow;
+      ? safeYAbove
+      : safeYBelow;
   safeY += laneOffset;
 
   return buildCornerPath(
-    [{ x: px1, y: y1 }, { x: ax, y: y1 }, { x: ax, y: safeY }, { x: bx, y: safeY }, { x: bx, y: y2 }, { x: px2, y: y2 }],
+    [
+      { x: px1, y: y1 },
+      { x: ax, y: y1 },
+      { x: ax, y: safeY },
+      { x: bx, y: safeY },
+      { x: bx, y: y2 },
+      { x: px2, y: y2 },
+    ],
     R,
   );
 }
@@ -180,12 +242,33 @@ export function svgRelations(
       const fromColIdx = t.columns.findIndex((c) => c.name === fk.from);
       if (fromColIdx === -1) return;
       const targetSchema = schema.find((s) => s.name === fk.table);
-      const toColIdx = targetSchema?.columns.findIndex((c) => c.name === fk.to) ?? 0;
+      const toColIdx =
+        targetSchema?.columns.findIndex((c) => c.name === fk.to) ?? 0;
       const safeToCol = toColIdx === -1 ? 0 : toColIdx;
-      const vx = computeVx(from.x, from.y, to.x, to.y, fromColIdx, safeToCol, positions, BOX_W, BOX_HEADER_H, ROW_H);
+      const vx = computeVx(
+        from.x,
+        from.y,
+        to.x,
+        to.y,
+        fromColIdx,
+        safeToCol,
+        positions,
+        BOX_W,
+        BOX_HEADER_H,
+        ROW_H,
+      );
       const y1 = from.y + BOX_HEADER_H + fromColIdx * ROW_H + ROW_H / 2;
       const y2 = to.y + BOX_HEADER_H + safeToCol * ROW_H + ROW_H / 2;
-      conns.push({ t, fkIdx, fromColIdx, safeToCol, vx, y1, y2, laneOffset: 0 });
+      conns.push({
+        t,
+        fkIdx,
+        fromColIdx,
+        safeToCol,
+        vx,
+        y1,
+        y2,
+        laneOffset: 0,
+      });
     });
   });
 
@@ -200,9 +283,11 @@ export function svgRelations(
     assigned.add(i);
     for (let j = i + 1; j < conns.length; j++) {
       if (assigned.has(j)) continue;
-      const a = conns[i], b = conns[j];
-      const yOverlap = Math.min(Math.max(a.y1, a.y2), Math.max(b.y1, b.y2)) >
-                       Math.max(Math.min(a.y1, a.y2), Math.min(b.y1, b.y2));
+      const a = conns[i],
+        b = conns[j];
+      const yOverlap =
+        Math.min(Math.max(a.y1, a.y2), Math.max(b.y1, b.y2)) >
+        Math.max(Math.min(a.y1, a.y2), Math.min(b.y1, b.y2));
       if (Math.abs(a.vx - b.vx) < 2 && yOverlap) {
         group.push(j);
         assigned.add(j);
@@ -222,12 +307,19 @@ export function svgRelations(
   // Build paths
   const paths = conns.map(({ t, fkIdx, fromColIdx, safeToCol, laneOffset }) => {
     const fk = t.foreignKeys[fkIdx];
-    const from = positions[t.name]!;
-    const to = positions[fk.table]!;
+    const from = positions[t.name] ?? { x: 0, y: 0, h: 0 };
+    const to = positions[fk.table] ?? { x: 0, y: 0, h: 0 };
     const d = routePath(
-      from.x, from.y, to.x, to.y,
-      fromColIdx, safeToCol,
-      positions, BOX_W, BOX_HEADER_H, ROW_H,
+      from.x,
+      from.y,
+      to.x,
+      to.y,
+      fromColIdx,
+      safeToCol,
+      positions,
+      BOX_W,
+      BOX_HEADER_H,
+      ROW_H,
       laneOffset,
     );
     return html`<path

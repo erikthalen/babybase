@@ -1,10 +1,11 @@
+import { dirname } from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { Hono } from "hono";
 import { createDb } from "./db/client.ts";
-import { createBackupsRouter } from "./features/backups/router.ts";
-import { readSettings, writeSettings } from "./features/backups/queries.ts";
 import { createMigrationsRouter } from "./features/migrations/router.ts";
 import { createSchemaRouter } from "./features/schema/router.ts";
+import { readSettings, writeSettings } from "./features/storage/queries.ts";
+import { createStorageRouter } from "./features/storage/router.ts";
 import { createTablesRouter } from "./features/tables/router.ts";
 import type { PicobaseConfig } from "./types.ts";
 
@@ -19,14 +20,15 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
   const resolved: Required<PicobaseConfig> = {
     database: config.database,
     basePath: config.basePath ?? "/",
-    migrationsDir: config.migrationsDir ?? "./migrations",
-    backupsDir: config.backupsDir ?? "./backups",
+    migrationsDir: config.migrationsDir ?? "./.picobase/migrations",
+    storageDir: config.storageDir ?? "./.picobase/storage",
   };
 
   const originalDatabase = config.database;
+  const picobaseDir = dirname(resolved.storageDir);
 
   // Override active database if a settings file exists from a previous mount
-  const settings = readSettings(resolved.backupsDir);
+  const settings = readSettings(picobaseDir);
   if (settings.activeDatabase) {
     resolved.database = settings.activeDatabase;
   }
@@ -41,7 +43,7 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
     }
     resolved.database = newPath;
     db = createDb(newPath);
-    writeSettings(resolved.backupsDir, { activeDatabase: newPath });
+    writeSettings(picobaseDir, { activeDatabase: newPath });
   };
 
   const app = new Hono<AppEnv>();
@@ -60,7 +62,7 @@ export function definePicobase(config: PicobaseConfig): Hono<AppEnv> {
   app.route("/tables", createTablesRouter());
   app.route("/schema", createSchemaRouter());
   app.route("/migrations", createMigrationsRouter());
-  app.route("/backups", createBackupsRouter({ originalDatabase, mountDb }));
+  app.route("/storage", createStorageRouter({ originalDatabase, mountDb }));
 
   // Graceful shutdown handler
   function shutdown() {

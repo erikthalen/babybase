@@ -65,6 +65,10 @@ body:has(.is-home) {
   margin-bottom: 0 !important;
 }
 
+.VPNav {
+  border-bottom: none !important;
+}
+
 /* Transparent nav over dark hero; use homepage body text color for all nav items */
 .Layout:has(.is-home) .VPNav {
   background: transparent !important;
@@ -82,13 +86,9 @@ body:has(.is-home) {
   --vp-c-gutter: transparent;
 }
 
-.Layout:has(.is-home) .VPImage.logo,
-.dark .VPImage.logo {
+.dark .VPImage.logo,
+.Layout:has(.is-home) .VPImage.logo {
   filter: brightness(100);
-}
-
-.VPNav {
-  border-bottom: none !important;
 }
 
 .VPNavBar {

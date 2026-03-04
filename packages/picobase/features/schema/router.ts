@@ -1,23 +1,14 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../../index.ts";
-import { listTables } from "../../db/schema-queries.ts";
-import {
-  getFullSchema,
-  ensurePendingChangesTable,
-  savePendingChanges,
-  getAllPendingChanges,
-  getPendingForTable,
-  clearPendingChanges,
-  deletePendingForTable,
-  generateDiffSQL,
-  generateCreateTableSQL,
-  getForeignKeys,
-} from "./queries.ts";
-import type { DesiredColumn } from "./queries.ts";
-import { getColumns } from "../tables/queries.ts";
-import { schemaListView, erDiagramView } from "./views.ts";
 import { layout, nav } from "../../components/layout.ts";
 import { respond, sseAction } from "../../components/sse.ts";
+import { listTables } from "../../db/schema-queries.ts";
+import type { AppEnv } from "../../index.ts";
+import {
+  ensureMigrationsTable,
+  getFileMigrations,
+  saveMigration,
+} from "../migrations/queries.ts";
+import { getColumns } from "../tables/queries.ts";
 import {
   editTableDialogContent,
   newEmptyColRow,
@@ -27,23 +18,34 @@ import {
   editsDialogContent,
   schemaActions,
 } from "./components/edits-dialog.ts";
+import type { DesiredColumn } from "./queries.ts";
 import {
-  saveMigration,
-  ensureMigrationsTable,
-  getFileMigrations,
-} from "../migrations/queries.ts";
+  clearPendingChanges,
+  deletePendingForTable,
+  ensurePendingChangesTable,
+  generateCreateTableSQL,
+  generateDiffSQL,
+  getAllPendingChanges,
+  getForeignKeys,
+  getFullSchema,
+  getPendingForTable,
+  savePendingChanges,
+} from "./queries.ts";
+import { erDiagramView, schemaListView } from "./views.ts";
 
 function getPendingColumnsMap(
   db: Parameters<typeof getAllPendingChanges>[0],
 ): Map<string, DesiredColumn[]> {
-  return new Map(getAllPendingChanges(db).map((p) => [p.tableName, p.desiredColumns]));
+  return new Map(
+    getAllPendingChanges(db).map((p) => [p.tableName, p.desiredColumns]),
+  );
 }
 
 function nextMigrationFilename(dir: string): string {
   const files = getFileMigrations(dir);
   const nums = files
-    .map((f) => parseInt(f.name.split("_")[0] ?? "0"))
-    .filter((n) => !isNaN(n));
+    .map((f) => parseInt(f.name.split("_")[0] ?? "0", 10))
+    .filter((n) => !Number.isNaN(n));
   const next = nums.length > 0 ? Math.max(...nums) + 1 : 1;
   const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   return `${String(next).padStart(3, "0")}_edit_tables_${today}.sql`;
@@ -154,7 +156,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
       ensureMigrationsTable(db);
       const filename = nextMigrationFilename(config.migrationsDir);
       saveMigration(config.migrationsDir, filename, sql);
-      db.prepare("INSERT INTO _picobase_migrations (name) VALUES (?)").run(filename);
+      db.prepare("INSERT INTO _picobase_migrations (name) VALUES (?)").run(
+        filename,
+      );
     }
     const schema = getFullSchema(db);
     const pending = getPendingColumnsMap(db);
@@ -182,7 +186,10 @@ export function createSchemaRouter(): Hono<AppEnv> {
     };
     return sseAction(c, async ({ patchSignals, patchElements }) => {
       await patchSignals(signals);
-      await patchElements(newRow, { selector: "#edit-dialog-col-list", mode: "append" });
+      await patchElements(newRow, {
+        selector: "#edit-dialog-col-list",
+        mode: "append",
+      });
     });
   });
 
@@ -198,7 +205,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
     const fullSchema = getFullSchema(db);
     const otherSchema = fullSchema.filter((t) => t.name !== tableName);
     const currentFKs = getForeignKeys(db, tableName);
-    const fkMap = new Map(currentFKs.map((fk) => [fk.from, `${fk.table}.${fk.to}`]));
+    const fkMap = new Map(
+      currentFKs.map((fk) => [fk.from, `${fk.table}.${fk.to}`]),
+    );
     const cols =
       pending ??
       dbColumns.map((col) => ({
@@ -222,18 +231,23 @@ export function createSchemaRouter(): Hono<AppEnv> {
       signals[`editcol_${i}_original`] = cols[i].originalName;
       signals[`editcol_${i}_deleted`] = false;
       signals[`editcol_${i}_fkref`] = pending
-        ? (pending[i]?.fkRef ?? '')
-        : (fkMap.get(cols[i].name) ?? '');
+        ? (pending[i]?.fkRef ?? "")
+        : (fkMap.get(cols[i].name) ?? "");
     }
 
     const bodyHtml = String(
-      editTableDialogContent(tableName, dbColumns, base, pending, otherSchema, currentFKs),
+      editTableDialogContent(
+        tableName,
+        dbColumns,
+        base,
+        pending,
+        otherSchema,
+        currentFKs,
+      ),
     );
     return sseAction(c, async ({ patchSignals, patchElements }) => {
       await patchSignals(signals);
-      await patchElements(
-        `<div id="edit-dialog-body">${bodyHtml}</div>`,
-      );
+      await patchElements(`<div id="edit-dialog-body">${bodyHtml}</div>`);
     });
   });
 
@@ -241,7 +255,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
   app.get("/tables/:name/new-column-row", async (c) => {
     const db = c.get("db");
     const idx = Number(c.req.query("idx") ?? 0);
-    const tableName = c.req.param('name');
+    const tableName = c.req.param("name");
     const fullSchema = getFullSchema(db);
     const otherSchema = fullSchema.filter((t) => t.name !== tableName);
     const newRow = String(newEmptyColRow(idx, otherSchema));
@@ -317,14 +331,17 @@ export function createSchemaRouter(): Hono<AppEnv> {
     const entries = allPending.map(({ tableName, desiredColumns }) => {
       const current = getColumns(db, tableName);
       const currentFKs = getForeignKeys(db, tableName);
-      const sql = generateDiffSQL(tableName, current, desiredColumns, currentFKs);
+      const sql = generateDiffSQL(
+        tableName,
+        current,
+        desiredColumns,
+        currentFKs,
+      );
       return { tableName, sql };
     });
     const bodyHtml = String(editsDialogContent(entries, base));
     return sseAction(c, async ({ patchElements }) => {
-      await patchElements(
-        `<div id="edits-dialog-body">${bodyHtml}</div>`,
-      );
+      await patchElements(`<div id="edits-dialog-body">${bodyHtml}</div>`);
     });
   });
 
@@ -346,9 +363,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
     });
     const bodyHtml = String(editsDialogContent(entries, base));
     return sseAction(c, async ({ patchElements }) => {
-      await patchElements(
-        `<div id="edits-dialog-body">${bodyHtml}</div>`,
-      );
+      await patchElements(`<div id="edits-dialog-body">${bodyHtml}</div>`);
       await patchElements(String(schemaActions(base, pendingCount)));
       await patchElements(
         `<span id="pending-dot-${tableName}" style="display:none"></span>`,
@@ -377,7 +392,12 @@ export function createSchemaRouter(): Hono<AppEnv> {
     for (const { tableName, desiredColumns } of allPending) {
       const current = getColumns(db, tableName);
       const currentFKs = getForeignKeys(db, tableName);
-      const sql = generateDiffSQL(tableName, current, desiredColumns, currentFKs);
+      const sql = generateDiffSQL(
+        tableName,
+        current,
+        desiredColumns,
+        currentFKs,
+      );
       if (sql) sqlParts.push(sql);
     }
 

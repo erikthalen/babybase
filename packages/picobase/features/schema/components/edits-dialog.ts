@@ -128,10 +128,11 @@ export function editsDialogContent(
         </svg>
       </button>
     </div>
-    ${entries.length === 0
-      ? html`<p class="edits-empty">No pending changes.</p>`
-      : entries.map(
-          (e) => html`
+    ${
+      entries.length === 0
+        ? html`<p class="edits-empty">No pending changes.</p>`
+        : entries.map(
+            (e) => html`
             <div class="edits-entry">
               <div class="edits-entry-header">
                 <span class="edits-entry-table">${e.tableName}</span>
@@ -146,7 +147,8 @@ export function editsDialogContent(
               <pre class="edits-sql">${e.sql || "-- no changes detected"}</pre>
             </div>
           `,
-        )}
+          )
+    }
   `;
 }
 

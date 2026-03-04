@@ -32,7 +32,7 @@ export function zoomControls() {
       <style>
         ${styles}
       </style>
-      <button class="zoom-btn" id="zoom-out">
+      <button class="zoom-btn" id="zoom-out" data-tooltip="Zoom out">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="12"
@@ -49,7 +49,7 @@ export function zoomControls() {
         </svg>
       </button>
       <span id="zoom-level">100%</span>
-      <button class="zoom-btn" id="zoom-in">
+      <button class="zoom-btn" id="zoom-in" data-tooltip="Zoom in">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="12"

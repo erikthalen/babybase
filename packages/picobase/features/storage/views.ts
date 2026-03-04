@@ -5,20 +5,20 @@ import type { BackupEntry } from "./queries.ts";
 const css = String.raw;
 
 const styles = css`
-  #backups-view {
+  #storage-view {
   }
-  .backups-container {
+  .storage-container {
     padding: 4.5rem 1.5rem 6rem;
     max-width: 880px;
     margin-inline: auto;
   }
-  .backups-card {
+  .storage-card {
     background: var(--pb-surface);
     border: 1px solid var(--pb-border);
     border-radius: 12px;
     overflow: hidden;
   }
-  .backups-controls {
+  .storage-controls {
     position: fixed;
     top: 1rem;
     left: 50%;
@@ -28,7 +28,7 @@ const styles = css`
     align-items: center;
     gap: 6px;
   }
-  .backups-controls .ctrl-group {
+  .storage-controls .ctrl-group {
     display: flex;
     align-items: center;
     gap: 2px;
@@ -38,11 +38,11 @@ const styles = css`
     padding: 3px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
-  .backups-controls .ctrl-group button {
+  .storage-controls .ctrl-group button {
     border: none;
     border-radius: 7px;
   }
-  .backups-controls .ctrl-group button:hover {
+  .storage-controls .ctrl-group button:hover {
     border-color: transparent;
   }
   .active-db-indicator {
@@ -63,15 +63,15 @@ const styles = css`
   .active-db-name {
     font-family: var(--pb-monospace);
   }
-  .backups-card-footer {
+  .storage-card-footer {
     padding: 1rem;
     border-top: 1px solid var(--pb-border);
   }
-  .backups-card-footer .upload-zone {
+  .storage-card-footer .upload-zone {
     margin: 0;
     max-width: none;
   }
-  .backups-table {
+  .storage-table {
   }
   .backup-filename {
     font-family: monospace;
@@ -228,15 +228,15 @@ function formatBytes(b: number): string {
   return `${(b / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export function backupsListRows(
-  backups: BackupEntry[],
+export function storageListRows(
+  entries: BackupEntry[],
   basePath: string,
   activeDatabase: string,
 ): string {
-  if (backups.length === 0) {
-    return '<tr><td colspan="4" class="text-muted">No backups yet.</td></tr>';
+  if (entries.length === 0) {
+    return '<tr><td colspan="4" class="text-muted">No files yet.</td></tr>';
   }
-  return backups
+  return entries
     .map((b) => {
       const isActive = b.path === activeDatabase;
       const label =
@@ -254,8 +254,8 @@ export function backupsListRows(
 
       const mountUrl =
         b.type === "original"
-          ? `${basePath}/backups/~original/mount`
-          : `${basePath}/backups/${encodeURIComponent(b.name)}/mount`;
+          ? `${basePath}/storage/~original/mount`
+          : `${basePath}/storage/${encodeURIComponent(b.name)}/mount`;
 
       const mountBtn = isActive
         ? `<button disabled><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg></button>`
@@ -270,18 +270,18 @@ export function backupsListRows(
   <td class="backup-filename">${b.name}${typeBadge}${activeBadge}</td>
   <td>${label}</td>
   <td>${formatBytes(b.size)}</td>
-  <td class="backup-actions-cell"><div class="backup-btn-group">${mountBtn}${deleteBtn}</div></td>
+  <td class="backup-actions-cell"><div class="backup-btn-group">${deleteBtn}${mountBtn}</div></td>
 </tr>`;
     })
     .join("\n");
 }
 
-export function backupsView(opts: {
-  backups: BackupEntry[];
+export function storageView(opts: {
+  entries: BackupEntry[];
   basePath: string;
   activeDatabase: string;
 }): string {
-  const { backups, basePath, activeDatabase } = opts;
+  const { entries, basePath, activeDatabase } = opts;
   const base = basePath.replace(/\/$/, "");
   const activeDbName = basename(activeDatabase);
 
@@ -354,24 +354,24 @@ export function backupsView(opts: {
       <button
         class="danger"
         data-attr:disabled="$_deleteConfirm !== $_deleteTarget"
-        data-on:click="@delete('${base}/backups/' + $_deleteTarget); $_deleteTarget=''; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').close()"
+        data-on:click="@delete('${base}/storage/' + $_deleteTarget); $_deleteTarget=''; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').close()"
       >
         Delete
       </button>
     </div>
   </dialog>`;
 
-  const rows = backupsListRows(backups, base, activeDatabase);
+  const rows = storageListRows(entries, base, activeDatabase);
 
   return String(
     html`<div
-      id="backups-view"
+      id="storage-view"
       data-signals="{_deleteTarget:'', _deleteConfirm:''}"
     >
       <style>
         ${raw(styles)}
       </style>
-      <div class="backups-controls">
+      <div class="storage-controls">
         <div class="ctrl-group">
           <span class="active-db-indicator">
             <span class="active-db-dot"></span>
@@ -379,14 +379,14 @@ export function backupsView(opts: {
           </span>
         </div>
         <div class="ctrl-group">
-          <button class="primary" data-on:click="@post('${base}/backups')">
+          <button class="primary" data-on:click="@post('${base}/storage')">
             Create backup
           </button>
         </div>
       </div>
-      <div class="backups-container">
-        <div class="backups-card">
-          <table class="backups-table">
+      <div class="storage-container">
+        <div class="storage-card">
+          <table class="storage-table">
             <thead>
               <tr>
                 <th>File</th>
@@ -395,17 +395,17 @@ export function backupsView(opts: {
                 <th></th>
               </tr>
             </thead>
-            <tbody id="backups-list">
+            <tbody id="storage-list">
               ${raw(rows)}
             </tbody>
           </table>
-          <div class="backups-card-footer">
+          <div class="storage-card-footer">
             ${uploadInput}
             <label
               for="upload-input"
               id="upload-zone"
               class="upload-zone"
-              data-upload-url="${base}/backups/upload"
+              data-upload-url="${base}/storage/upload"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

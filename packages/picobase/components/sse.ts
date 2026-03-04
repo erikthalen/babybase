@@ -3,19 +3,33 @@ import { streamSSE } from "hono/streaming";
 
 export type PatchElementsOptions = {
   selector?: string;
-  mode?: "outer" | "inner" | "replace" | "prepend" | "append" | "before" | "after" | "remove";
+  mode?:
+    | "outer"
+    | "inner"
+    | "replace"
+    | "prepend"
+    | "append"
+    | "before"
+    | "after"
+    | "remove";
 };
 
 export type SSEStream = {
-  patchElements: (html: string, options?: PatchElementsOptions) => Promise<void>;
+  patchElements: (
+    html: string,
+    options?: PatchElementsOptions,
+  ) => Promise<void>;
   patchSignals: (signals: Record<string, unknown>) => Promise<void>;
 };
 
-function formatPatchElements(html: string, options?: PatchElementsOptions): string {
+function formatPatchElements(
+  html: string,
+  options?: PatchElementsOptions,
+): string {
   const lines: string[] = [];
   if (options?.selector) lines.push(`selector ${options.selector}`);
   if (options?.mode) lines.push(`mode ${options.mode}`);
-  html.split("\n").forEach((l) => lines.push(`elements ${l}`));
+  for (const l of html.split("\n")) lines.push(`elements ${l}`);
   return lines.join("\n");
 }
 

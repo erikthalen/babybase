@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-import type { TableSchema, DesiredColumn } from "../queries.ts";
+import type { DesiredColumn, TableSchema } from "../queries.ts";
 
 const css = String.raw;
 
@@ -65,44 +65,20 @@ export const tableBoxStyles = css`
     background: none;
     color: var(--pb-text-muted);
   }
-  .table-box-edit-btn::before,
-  .table-box-link-btn::before {
-    content: attr(data-tooltip);
-    position: absolute;
+  .table-box-edit-btn[data-tooltip]::before,
+  .table-box-link-btn[data-tooltip]::before {
+    top: unset;
     bottom: calc(100% + calc(6px / var(--pb-zoom, 1)));
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
     padding: calc(4px / var(--pb-zoom, 1)) calc(8px / var(--pb-zoom, 1));
     border-radius: calc(6px / var(--pb-zoom, 1));
     font-size: calc(11px / var(--pb-zoom, 1));
-    font-weight: 400;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 100;
   }
-  .table-box-edit-btn::after,
-  .table-box-link-btn::after {
-    content: "";
-    position: absolute;
+  .table-box-edit-btn[data-tooltip]::after,
+  .table-box-link-btn[data-tooltip]::after {
+    top: unset;
     bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
+    border-bottom-color: transparent;
     border-top-color: #000;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.15s;
-    z-index: 100;
-  }
-  .table-box-edit-btn:hover::before,
-  .table-box-link-btn:hover::before,
-  .table-box-edit-btn:hover::after,
-  .table-box-link-btn:hover::after {
-    opacity: 1;
   }
   .table-box-pending-dot {
     width: 7px;
@@ -198,9 +174,9 @@ export function tableBox(
         >
           ${c.pk ? pkSvg : ""}
           <span class="table-box-col-name"
-            >${fk}${c.name}${c.dflt_value != null
-              ? ` = ${String(c.dflt_value)}`
-              : ""}</span
+            >${fk}${c.name}${
+              c.dflt_value != null ? ` = ${String(c.dflt_value)}` : ""
+            }</span
           >
           <span class="table-box-col-type">${c.type || "ANY"}</span>
         </div>`;

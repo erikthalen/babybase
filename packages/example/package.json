@@ -1,17 +1,17 @@
 {
-	"name": "@picobase/example",
-	"type": "module",
-	"scripts": {
-		"dev": "node --watch ./server.ts",
-		"start": "node ./server.ts",
-		"seed": "node ./seed.ts"
-	},
-	"dependencies": {
-		"@picobase/core": "workspace:*",
-		"hono": "catalog:",
-		"@hono/node-server": "catalog:"
-	},
-	"devDependencies": {
-		"@types/node": "catalog:"
-	}
+  "name": "@picobase/example",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch ./server.ts",
+    "start": "node ./server.ts",
+    "seed": "node ./seed.ts"
+  },
+  "dependencies": {
+    "@picobase/core": "workspace:*",
+    "hono": "catalog:",
+    "@hono/node-server": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:"
+  }
 }
