@@ -50,10 +50,14 @@ export function cameraScript(
         function (e) {
           e.preventDefault();
           var rect = container.getBoundingClientRect();
+          const origin = {
+            x: e.clientX - window.innerWidth / 2 - rect.left,
+            y: e.clientY - window.innerHeight / 2 - rect.top,
+          };
           if (e.ctrlKey || e.metaKey) {
             zoomCamera(
-              e.clientX - rect.left,
-              e.clientY - rect.top,
+              origin.x - rect.left,
+              origin.y - rect.top,
               e.deltaY / 100,
             );
           } else {
@@ -443,7 +447,8 @@ export function cameraScript(
         var rect = container.getBoundingClientRect();
         var i = Math.round(camera.z * 100) / 25;
         var next = Math.max(0.25, (i + dir) * 0.25);
-        wrap.style.transition = "transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+        wrap.style.transition =
+          "transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
         zoomCamera(rect.width / 2, rect.height / 2, camera.z - next);
         wrap.addEventListener("transitionend", function onDone() {
           wrap.style.transition = "";
@@ -461,7 +466,8 @@ export function cameraScript(
       if (btnReset)
         btnReset.addEventListener("click", function () {
           camera = { x: 0, y: 0, z: 1 };
-          wrap.style.transition = "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
+          wrap.style.transition =
+            "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
           applyCamera();
           wrap.addEventListener("transitionend", function onDone() {
             wrap.style.transition = "";

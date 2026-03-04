@@ -1,4 +1,5 @@
-import { html } from "hono/html";
+import { html, raw } from "hono/html";
+import { highlightSql } from "../../migrations/sql-highlight.ts";
 
 const css = String.raw;
 
@@ -68,16 +69,20 @@ const contentStyles = css`
   }
   .edits-sql {
     font-family: var(--pb-monospace);
-    font-size: 0.75rem;
-    color: var(--pb-text-muted);
-    white-space: pre-wrap;
-    word-break: break-all;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    color: #fafafa;
+    background: var(--pb-syntax-bg);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
     margin: 0;
-    background: var(--pb-bg);
-    border: 1px solid var(--pb-border);
-    border-radius: 4px;
-    padding: 0.75rem;
   }
+  .edits-sql .sql-keyword { color: var(--pb-syntax-keyword); }
+  .edits-sql .sql-string  { color: var(--pb-syntax-string); }
+  .edits-sql .sql-comment { color: var(--pb-syntax-comment); font-style: italic; }
+  .edits-sql .sql-number  { color: var(--pb-syntax-number); }
 `;
 
 /** Empty dialog shell rendered once in the ER diagram page */
@@ -144,7 +149,7 @@ export function editsDialogContent(
                   Remove
                 </button>
               </div>
-              <pre class="edits-sql">${e.sql || "-- no changes detected"}</pre>
+              <pre class="edits-sql">${raw(highlightSql(e.sql || "-- no changes detected"))}</pre>
             </div>
           `,
           )
@@ -157,7 +162,7 @@ export function schemaActions(base: string, pendingCount: number) {
   if (pendingCount === 0) {
     return html`<span id="schema-actions" style="display:none"></span>`;
   }
-  return html`<div id="schema-actions" class="schema-actions">
+  return html`<div id="schema-actions" class="ctrl-group">
     <button
       data-on:click="$_editsDialog.showModal(); @get('${base}/schema/edits-dialog')"
     >

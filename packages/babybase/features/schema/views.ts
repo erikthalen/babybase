@@ -79,7 +79,7 @@ const diagramStyles = css`
     background: var(--pb-diagram-bg);
   }
   #canvas-wrap {
-    transform-origin: 0 0;
+    transform-origin: 50vw 50vh;
     position: relative;
   }
   .canvas-svg {
@@ -88,10 +88,6 @@ const diagramStyles = css`
     left: 0;
     pointer-events: none;
     overflow: visible;
-  }
-  .schema-actions {
-    display: flex;
-    gap: 0.5rem;
   }
   .er-diagram-empty {
     display: flex;
@@ -208,9 +204,7 @@ export function erDiagramView(
         </style>
         <div data-signals="{_tableName: ''}" class="er-diagram">
           <div class="er-diagram-body">
-            <div class="er-diagram-controls">
-              ${schemaActions(base, 0)}
-            </div>
+            <div class="er-diagram-controls">${schemaActions(base, 0)}</div>
             ${editTableDialogShell()} ${editsDialogShell()}
             <div id="diagram-viewport">
               <div class="er-diagram-empty">
@@ -321,7 +315,7 @@ export function erDiagramView(
           <div class="er-diagram-controls">
             <div class="ctrl-group">${createTableDialog(base)}</div>
             <div class="ctrl-group">${zoomControls()}</div>
-            ${schemaActions(base, pendingCount)}
+
             <div class="ctrl-group">
               <button
                 id="reset-view"
@@ -348,6 +342,8 @@ export function erDiagramView(
                 </svg>
               </button>
             </div>
+
+            ${schemaActions(base, pendingCount)}
           </div>
 
           ${editTableDialogShell()} ${editsDialogShell()}
