@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build docs
-        run: pnpm --filter @picobase/docs build
+        run: pnpm --filter @babybase/docs build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
