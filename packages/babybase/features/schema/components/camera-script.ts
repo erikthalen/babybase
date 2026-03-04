@@ -50,14 +50,11 @@ export function cameraScript(
         function (e) {
           e.preventDefault();
           var rect = container.getBoundingClientRect();
-          const origin = {
-            x: e.clientX - window.innerWidth / 2 - rect.left,
-            y: e.clientY - window.innerHeight / 2 - rect.top,
-          };
+
           if (e.ctrlKey || e.metaKey) {
             zoomCamera(
-              origin.x - rect.left,
-              origin.y - rect.top,
+              e.clientX - rect.left,
+              e.clientY - rect.top,
               e.deltaY / 100,
             );
           } else {

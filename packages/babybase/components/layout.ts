@@ -570,6 +570,23 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
             .toast-error .toast-title {
               color: var(--pb-danger);
             }
+            #toast-clear-all {
+              display: none;
+              align-self: flex-end;
+              font-size: 0.75rem;
+              color: var(--pb-text-muted);
+              border-color: transparent;
+              padding: 2px 8px;
+              height: auto;
+              pointer-events: all;
+            }
+            #toast-clear-all:hover {
+              border-color: transparent;
+              color: var(--pb-text);
+            }
+            #toast-container:has(.toast ~ .toast) #toast-clear-all {
+              display: block;
+            }
             [data-tooltip] {
               position: relative;
             }
@@ -613,7 +630,9 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
         <body>
           ${raw(navHtml)}
           <main id="main">${raw(content)}</main>
-          <div id="toast-container"></div>
+          <div id="toast-container">
+            <button id="toast-clear-all" onclick="document.querySelectorAll('#toast-container .toast').forEach(t=>t.remove())" aria-label="Clear all notifications">Clear all</button>
+          </div>
         </body>
       </html>`,
   );

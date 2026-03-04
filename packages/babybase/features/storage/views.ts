@@ -52,6 +52,18 @@ const styles = css`
     padding: 5px 10px;
     font-size: 0.8rem;
     color: var(--pb-text-muted);
+    view-transition-name: active-db-indicator;
+  }
+  ::view-transition-image-pair(*) {
+    overflow: hidden;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    object-fit: none;
+    object-position: center;
+  }
+  .storage-controls .ctrl-group:last-child {
+    view-transition-name: storage-controls-actions;
   }
   .active-db-dot {
     width: 6px;
@@ -76,12 +88,22 @@ const styles = css`
   .backup-filename {
     font-family: monospace;
     font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .backup-badges {
+    display: flex;
+    gap: 4px;
   }
   .backup-badge {
     font-size: 0.65rem;
     padding: 1px 5px;
     border-radius: 3px;
     vertical-align: middle;
+  }
+  .backup-badge + .backup-badge {
     margin-left: 4px;
   }
   .upload-badge {
@@ -114,6 +136,7 @@ const styles = css`
   .backup-btn-group button {
     border-color: transparent;
     border-radius: 7px;
+    height: 27px;
   }
   .backup-btn-group button:hover,
   .backup-btn-group button.danger:hover {
@@ -257,6 +280,8 @@ export function storageListRows(
           ? `${basePath}/storage/~original/mount`
           : `${basePath}/storage/${encodeURIComponent(b.name)}/mount`;
 
+      const vtGroup = `vt-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
+
       const mountBtn = isActive
         ? `<button disabled><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg></button>`
         : `<button data-on:click="@post('${mountUrl}')">Mount</button>`;
@@ -267,13 +292,23 @@ export function storageListRows(
           : "";
 
       return `<tr${isActive ? ' class="active-row"' : ""}>
-  <td class="backup-filename">${b.name}${typeBadge}${activeBadge}</td>
+  <td class="backup-filename">
+    <span>${b.name}</span>
+    ${typeBadge || activeBadge ? `<span class="backup-badges">${typeBadge}${activeBadge}</span>` : ""}
+  </td>
   <td>${label}</td>
   <td>${formatBytes(b.size)}</td>
-  <td class="backup-actions-cell"><div class="backup-btn-group">${deleteBtn}${mountBtn}</div></td>
+  <td class="backup-actions-cell"><div class="backup-btn-group" style="view-transition-name: ${vtGroup}">${deleteBtn}${mountBtn}</div></td>
 </tr>`;
     })
     .join("\n");
+}
+
+export function activeDbIndicator(name: string): string {
+  return `<span id="active-db-indicator" class="active-db-indicator">
+    <span class="active-db-dot"></span>
+    <span class="active-db-name">${name}</span>
+  </span>`;
 }
 
 export function storageView(opts: {
@@ -372,12 +407,7 @@ export function storageView(opts: {
         ${raw(styles)}
       </style>
       <div class="storage-controls">
-        <div class="ctrl-group">
-          <span class="active-db-indicator">
-            <span class="active-db-dot"></span>
-            <span class="active-db-name">${activeDbName}</span>
-          </span>
-        </div>
+        <div class="ctrl-group">${raw(activeDbIndicator(activeDbName))}</div>
         <div class="ctrl-group">
           <button class="primary" data-on:click="@post('${base}/storage')">
             Create backup

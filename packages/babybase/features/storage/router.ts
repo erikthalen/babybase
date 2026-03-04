@@ -115,6 +115,7 @@ export function createStorageRouter(opts: {
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
         `<tbody id="storage-list">${storageListRows(entries, base, config.database)}</tbody>`,
+        { useViewTransition: true },
       );
     });
   });
@@ -134,6 +135,7 @@ export function createStorageRouter(opts: {
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
         `<main id="main">${storageView({ entries, basePath: base, activeDatabase: config.database })}</main>`,
+        { useViewTransition: true },
       );
       await patchElements(
         toastHtml(

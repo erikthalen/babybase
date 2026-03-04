@@ -79,7 +79,7 @@ const diagramStyles = css`
     background: var(--pb-diagram-bg);
   }
   #canvas-wrap {
-    transform-origin: 50vw 50vh;
+    transform-origin: 0 0;
     position: relative;
   }
   .canvas-svg {
