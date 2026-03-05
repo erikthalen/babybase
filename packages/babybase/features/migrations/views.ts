@@ -515,10 +515,10 @@ export function migrationsView(opts: {
       <div class="migrations-controls">
         ${raw(
           hasPending
-            ? `<div class="ctrl-group"><button class="primary" data-on:click="@post('${base}/migrations/run-all')">Run all pending</button></div>`
+            ? `<div class="ctrl-group" style="view-transition-name: ctrl-group-1;"><button class="primary" data-on:click="@post('${base}/migrations/run-all')">Run all pending</button></div>`
             : "",
         )}
-        <div class="ctrl-group">
+        <div class="ctrl-group" style="view-transition-name: ctrl-group-2;">
           <button
             data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"
           >

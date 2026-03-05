@@ -63,7 +63,12 @@ export function createStorageRouter(opts: {
       basePath: base,
       activeDatabase: config.database,
     });
-    const navHtml = nav({ basePath: base, activeSection: "storage", tables, hasDatabase: db !== null });
+    const navHtml = nav({
+      basePath: base,
+      activeSection: "storage",
+      tables,
+      hasDatabase: db !== null,
+    });
     return respond(c, {
       fullPage: () => layout({ title: "Storage", nav: navHtml, content }),
       fragment: () => `<main id="main">${content}</main>`,
@@ -129,7 +134,11 @@ export function createStorageRouter(opts: {
     if (wasActive) {
       return sseAction(c, async ({ patchElements }) => {
         await patchElements(
-          navElement({ basePath: base, activeSection: "storage", hasDatabase: false }),
+          navElement({
+            basePath: base,
+            activeSection: "storage",
+            hasDatabase: false,
+          }),
           { useViewTransition: true },
         );
         await patchElements(
@@ -160,7 +169,11 @@ export function createStorageRouter(opts: {
     const entries = buildEntries(originalDatabase, config.storageDir);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
-        navElement({ basePath: base, activeSection: "storage", hasDatabase: true }),
+        navElement({
+          basePath: base,
+          activeSection: "storage",
+          hasDatabase: true,
+        }),
         { useViewTransition: true },
       );
       await patchElements(

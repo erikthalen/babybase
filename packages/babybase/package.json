@@ -6,6 +6,10 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "source": {
+        "types": "./index.ts",
+        "default": "./index.ts"
+      },
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }

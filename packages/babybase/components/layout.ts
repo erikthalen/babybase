@@ -92,6 +92,43 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               --pb-syntax-comment: #6a9955;
               --pb-syntax-number: #b5cea8;
             }
+
+            @view-transition {
+              navigation: auto;
+            }
+
+            /* Create a custom animation */
+            @keyframes move-out {
+              from {
+                transform: translateY(0%);
+              }
+
+              to {
+                opacity: 0;
+                transform: translateY(-5px);
+              }
+            }
+
+            @keyframes move-in {
+              from {
+                opacity: 0;
+                transform: translateY(5px);
+              }
+
+              to {
+                transform: translateY(0%);
+              }
+            }
+
+            /* Apply the custom animation to the old and new page states */
+            ::view-transition-old(root) {
+              animation: 0.15s ease-out both move-out;
+            }
+
+            ::view-transition-new(root) {
+              animation: 0.15s ease-out both move-in;
+            }
+
             *,
             *::before,
             *::after {
@@ -120,6 +157,7 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
               display: flex;
               align-items: center;
               gap: 0.5rem;
+              view-transition-name: site-logo;
             }
             .floating-nav {
               position: fixed;
@@ -155,21 +193,21 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
             @keyframes nav-link-in {
               from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateX(20px);
               }
               to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateX(0);
               }
             }
             @keyframes nav-link-out {
               from {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateX(0);
               }
               to {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateX(20px);
               }
             }
             ::view-transition-new(nav-schema),
@@ -736,7 +774,6 @@ export function nav({
     const cls = activeSection === section ? "active" : "";
     return html`<a
       href="${base}${path}"
-      data-on:click="@get('${base}${path}')"
       ${raw(cls ? `class="${cls}"` : "")}
       ${raw(vtName ? `style="view-transition-name: ${vtName}"` : "")}
     >
@@ -807,7 +844,6 @@ export function nav({
                   <path d="M6 15v-1a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v1" />
                   <path d="M12 9l0 3" />
                 </svg>`.toString(),
-                "nav-schema",
               ),
             )
           : "",
@@ -836,7 +872,6 @@ export function nav({
                   <path d="M13 16l4 4l4 -4" />
                   <path d="M17 10l0 10" />
                 </svg>`.toString(),
-                "nav-migrations",
               ),
             )
           : "",
@@ -885,7 +920,7 @@ export function navElement(props: NavProps): string {
     vtName?: string,
   ) => {
     const cls = activeSection === section ? "active" : "";
-    return `<a href="${base}${path}" data-on:click="@get('${base}${path}')"${cls ? ` class="${cls}"` : ""}${vtName ? ` style="view-transition-name: ${vtName}"` : ""}>${icon} ${label}</a>`;
+    return `<a href="${base}${path}" ${cls ? ` class="${cls}"` : ""}${vtName ? ` style="view-transition-name: ${vtName}"` : ""}>${icon} ${label}</a>`;
   };
 
   const schemaIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 17a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"/><path d="M15 17a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"/><path d="M9 5a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v2a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -2"/><path d="M6 15v-1a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v1"/><path d="M12 9l0 3"/></svg>`;
@@ -906,7 +941,7 @@ export function navElement(props: NavProps): string {
     : "";
   const storageLink = link("/storage", "Storage", "storage", storageIcon);
 
-  return `<nav id="floating-nav" class="floating-nav" style="view-transition-name: floating-nav">${schemaLink}${migrationsLink}${storageLink}</nav>`;
+  return `<nav id="floating-nav" class="floating-nav">${schemaLink}${migrationsLink}${storageLink}</nav>`;
 }
 
 export function toastHtml(

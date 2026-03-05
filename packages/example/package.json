@@ -3,7 +3,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "node --watch ./server.ts",
+    "dev": "node --conditions source --watch ./server.ts",
     "start": "node ./server.ts",
     "seed": "node ./seed.ts"
   },

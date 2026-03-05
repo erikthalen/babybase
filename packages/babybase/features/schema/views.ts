@@ -223,7 +223,7 @@ export function erDiagramView(
   if (schema.length === 0) {
     const base = basePath.replace(/\/$/, "");
     const activeDbName = activeDatabase
-      ? activeDatabase.split("/").pop() ?? activeDatabase
+      ? (activeDatabase.split("/").pop() ?? activeDatabase)
       : "No database";
     return String(
       html`<style>
@@ -232,7 +232,13 @@ export function erDiagramView(
         <div data-signals="{_tableName: ''}" class="er-diagram">
           <div class="er-diagram-body">
             <div class="er-diagram-controls">
-              <div class="ctrl-group">${raw(activeDbIndicator(activeDbName, !!activeDatabase))}</div>
+              <div
+                class="ctrl-group"
+                style="view-transition-name: ctrl-group-1;"
+              >
+                ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
+              </div>
+
               ${schemaActions(base, 0)}
             </div>
             ${editTableDialogShell()} ${editsDialogShell()}
@@ -335,7 +341,7 @@ export function erDiagramView(
   const base = basePath.replace(/\/$/, "");
   const pendingCount = pendingColumns.size;
   const activeDbName = activeDatabase
-    ? activeDatabase.split("/").pop() ?? activeDatabase
+    ? (activeDatabase.split("/").pop() ?? activeDatabase)
     : "No database";
 
   return String(
@@ -346,11 +352,16 @@ export function erDiagramView(
       <div data-signals="{_tableName: ''}" class="er-diagram">
         <div class="er-diagram-body">
           <div class="er-diagram-controls">
-            <div class="ctrl-group">${raw(activeDbIndicator(activeDbName, !!activeDatabase))}</div>
-            <div class="ctrl-group">${createTableDialog(base)}</div>
-            <div class="ctrl-group">${zoomControls()}</div>
-
-            <div class="ctrl-group">
+            <div class="ctrl-group" style="view-transition-name: ctrl-group-1;">
+              ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
+            </div>
+            <div class="ctrl-group" style="view-transition-name: ctrl-group-2;">
+              ${createTableDialog(base)}
+            </div>
+            <div class="ctrl-group" style="view-transition-name: ctrl-group-3;">
+              ${zoomControls()}
+            </div>
+            <div class="ctrl-group" style="view-transition-name: ctrl-group-4;">
               <button
                 id="reset-view"
                 class="zoom-btn"

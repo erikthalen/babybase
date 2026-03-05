@@ -54,29 +54,39 @@ const styles = css`
     color: var(--pb-text-muted);
     view-transition-name: active-db-indicator;
   }
+
+  /* ::view-transition-group(*) {
+    animation-duration: 2s;
+  } */
+
   ::view-transition-image-pair(*) {
     overflow: hidden;
   }
+
   ::view-transition-old(*),
   ::view-transition-new(*) {
     object-fit: none;
     object-position: center;
   }
+
   .storage-controls .ctrl-group:last-child {
     view-transition-name: storage-controls-actions;
   }
+
   .active-db-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: #22c55e;
     flex-shrink: 0;
+    view-transition-name: active-db-dot;
   }
   .active-db-dot--none {
     background: var(--pb-text-faint);
   }
   .active-db-name {
     font-family: var(--pb-monospace);
+    view-transition-name: active-db-name;
   }
   .storage-card-footer {
     padding: 1rem;
@@ -87,7 +97,13 @@ const styles = css`
     max-width: none;
   }
   .storage-table {
+    width: 100%;
   }
+
+  .storage-table td {
+    min-height: 72px;
+  }
+
   .backup-filename {
     font-family: monospace;
     font-size: 0.8rem;
@@ -280,7 +296,7 @@ export function storageListRows(
             ? '<span class="backup-badge original-badge">original</span>'
             : "";
       const activeBadge = isActive
-        ? '<span class="backup-badge active-badge">active</span>'
+        ? '<span class="backup-badge active-badge" style="view-transition-name: active-badge">active</span>'
         : "";
 
       const mountUrl =
@@ -291,7 +307,21 @@ export function storageListRows(
       const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
 
       const mountBtn = isActive
-        ? `<span data-tooltip="Currently mounted"><button disabled><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-check"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg></button></span>`
+        ? `<button disabled style="view-transition-name: ${vtGroup}"><span data-tooltip="Currently mounted" style="display: flex;"><svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#22c55e"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="icon icon-tabler icons-tabler-outline icon-tabler-check"
+            >
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M5 12l5 5l10 -10" />
+            </svg></span></button>`
         : `<button data-on:click="@post('${mountUrl}')">Mount</button>`;
 
       const deleteBtn =
@@ -307,7 +337,7 @@ export function storageListRows(
   </td>
   <td>${label}</td>
   <td>${formatBytes(b.size)}</td>
-  <td class="backup-actions-cell"><div class="backup-btn-group" style="view-transition-name: ${vtGroup}">${deleteBtn}${mountBtn}</div></td>
+  <td class="backup-actions-cell"><div class="backup-btn-group">${deleteBtn}${mountBtn}</div></td>
 </tr>`;
     })
     .join("\n");
@@ -327,7 +357,9 @@ export function storageView(opts: {
 }): string {
   const { entries, basePath, activeDatabase } = opts;
   const base = basePath.replace(/\/$/, "");
-  const activeDbName = activeDatabase ? basename(activeDatabase) : "No database";
+  const activeDbName = activeDatabase
+    ? basename(activeDatabase)
+    : "No database";
 
   const uploadInput = html`<input
     type="file"
@@ -416,10 +448,12 @@ export function storageView(opts: {
         ${raw(styles)}
       </style>
       <div class="storage-controls">
-        <div class="ctrl-group">${raw(activeDbIndicator(activeDbName, !!activeDatabase))}</div>
+        <div class="ctrl-group" style="view-transition-name: ctrl-group-1;">
+          ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
+        </div>
         ${raw(
           activeDatabase
-            ? `<div class="ctrl-group">
+            ? `<div class="ctrl-group" style="view-transition-name: ctrl-group-2;">
           <button class="primary" data-on:click="@post('${base}/storage')">
             Create backup
           </button>
