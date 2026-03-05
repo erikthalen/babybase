@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { exec } from "node:child_process";
-import { dirname, resolve } from "node:path";
+import { copyFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { defineBabybase } from "@babybase/core";
 
@@ -26,19 +29,33 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
-if (!dbArg) {
+const isDemo = args[0] === "demo";
+
+if (!dbArg && !isDemo) {
   console.error("Usage: babybase <database.db> [--port 3000]");
   process.exit(1);
 }
 
-const database = resolve(process.cwd(), dbArg);
-const babybaseDir = resolve(dirname(database), ".babybase");
+let database;
+let migrationsDir;
+let storageDir;
 
-const app = defineBabybase({
-  database,
-  migrationsDir: `${babybaseDir}/migrations`,
-  storageDir: `${babybaseDir}/storage`,
-});
+if (isDemo) {
+  const bundled = join(dirname(fileURLToPath(import.meta.url)), "demo-database.sqlite");
+  const tempDir = join(tmpdir(), "babybase-demo");
+  mkdirSync(tempDir, { recursive: true });
+  database = join(tempDir, "demo.sqlite");
+  migrationsDir = join(tempDir, "migrations");
+  storageDir = join(tempDir, "storage");
+  copyFileSync(bundled, database);
+} else {
+  database = resolve(process.cwd(), dbArg);
+  const babybaseDir = resolve(dirname(database), ".babybase");
+  migrationsDir = `${babybaseDir}/migrations`;
+  storageDir = `${babybaseDir}/storage`;
+}
+
+const app = defineBabybase({ database, migrationsDir, storageDir });
 
 serve({ fetch: app.fetch, port }, () => {
   const url = `http://localhost:${port}`;
@@ -55,8 +72,9 @@ serve({ fetch: app.fetch, port }, () => {
     `  Server started on port ${T}${port}${R}.`,
     `  Browse your database at ${T}${url}${R}`,
     ``,
-    `  ${D}database${R}  ${database}`,
-    `  ${D}storage ${R}  ${babybaseDir}`,
+    ...(isDemo
+      ? [`  ${D}demo mode${R}  Changes are not saved.`]
+      : [`  ${D}database${R}  ${database}`, `  ${D}storage ${R}  ${storageDir}`]),
   ];
 
   process.stdout.write(`\n${lines.join("\n")}\n\n`);

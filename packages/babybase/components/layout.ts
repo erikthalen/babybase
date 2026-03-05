@@ -105,14 +105,14 @@ export function layout({ title, nav: navHtml, content }: LayoutProps): string {
 
               to {
                 opacity: 0;
-                transform: translateY(-5px);
+                transform: translateY(-0px);
               }
             }
 
             @keyframes move-in {
               from {
                 opacity: 0;
-                transform: translateY(5px);
+                transform: translateY(0px);
               }
 
               to {

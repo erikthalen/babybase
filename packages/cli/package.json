@@ -1,11 +1,14 @@
 {
   "name": "babybase",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "bin": {
     "babybase": "./cli.js"
   },
-  "files": ["cli.js"],
+  "files": [
+    "cli.js",
+    "demo-database.sqlite"
+  ],
   "scripts": {
     "start": "node cli.js"
   },
