@@ -69,7 +69,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
     const db = c.get("db")!;
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
-    const babybaseDir = dirname(config.storageDir);
+    const babybaseDir = config.settingsDir;
     const settings = readSettings(babybaseDir);
     const dbName = config.database ? basename(config.database) : undefined;
     const camera = dbName ? getCameraState(settings, dbName) : undefined;
@@ -471,7 +471,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
     if (!tableName || !Number.isFinite(x) || !Number.isFinite(y)) {
       return c.json({ ok: false }, 400);
     }
-    const babybaseDir = dirname(config.storageDir);
+    const babybaseDir = config.settingsDir;
     const dbName = basename(config.database);
     const settings = readSettings(babybaseDir);
     writeSettings(
@@ -497,7 +497,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
       return c.json({ ok: false }, 400);
     }
-    const babybaseDir = dirname(config.storageDir);
+    const babybaseDir = config.settingsDir;
     const dbName = basename(config.database);
     const settings = readSettings(babybaseDir);
     writeSettings(babybaseDir, setCameraState(settings, dbName, { x, y, z }));

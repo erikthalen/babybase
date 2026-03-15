@@ -12,12 +12,24 @@ const styles = css`
     padding: 4.5rem 1.5rem 6rem;
     max-width: 880px;
     margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
   }
   .storage-card {
     background: var(--pb-surface);
     border: 1px solid var(--pb-border);
     border-radius: 12px;
     overflow-y: clip;
+  }
+  .storage-card-header {
+    padding: 0.875rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--pb-border);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--pb-text-faint);
   }
   .storage-controls {
     position: fixed;
@@ -35,11 +47,14 @@ const styles = css`
   .storage-controls .button-group:last-child {
     view-transition-name: storage-controls-actions;
   }
-  .storage-card-footer {
+  .storage-dropzone-card {
+    background: var(--pb-surface);
+    border: 1px solid var(--pb-border);
+    border-radius: 12px;
+    overflow-y: clip;
     padding: 1rem;
-    border-top: 1px solid var(--pb-border);
   }
-  .storage-card-footer .upload-zone {
+  .storage-dropzone-card .upload-zone {
     margin: 0;
     max-width: none;
   }
@@ -86,6 +101,7 @@ export function storageListRows(
   entries: BackupEntry[],
   basePath: string,
   activeDatabase: string | undefined,
+  mode: "local" | "s3" = "local",
 ) {
   if (entries.length === 0) {
     return html`<tr>
@@ -94,7 +110,7 @@ export function storageListRows(
   }
 
   return entries.map((b, i) => {
-    const isActive = b.path === activeDatabase;
+    const isActive = b.source === "local" && !!activeDatabase && b.path === activeDatabase;
     const label =
       b.createdAt.getTime() === 0
         ? "—"
@@ -107,11 +123,13 @@ export function storageListRows(
           }).format(b.createdAt);
 
     const typeBadge =
-      b.type === "upload"
-        ? html`<span class="badge upload">upload</span>`
-        : b.type === "original"
-          ? html`<span class="badge original">original</span>`
-          : "";
+      mode === "local"
+        ? b.type === "upload"
+          ? html`<span class="badge upload">upload</span>`
+          : b.type === "original"
+            ? html`<span class="badge original">original</span>`
+            : ""
+        : "";
 
     const activeBadge = isActive
       ? html`<span
@@ -132,7 +150,7 @@ export function storageListRows(
         ? `${basePath}/storage/~original/download`
         : `${basePath}/storage/${encodeURIComponent(b.name)}/download`;
 
-const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
+    const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
 
     const mountBtn = isActive
       ? html`<button disabled style="view-transition-name: ${vtGroup}">
@@ -140,13 +158,15 @@ const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
             ${iconCheck(12)}
           </span>
         </button>`
-      : html`<button data-on:click="@post('${mountUrl}')">Mount</button>`;
+      : mode === "s3"
+        ? html`<button data-on:click="@post('${mountUrl}')">Clone &amp; mount</button>`
+        : html`<button data-on:click="@post('${mountUrl}')">Mount</button>`;
 
     const deleteBtn =
       b.type !== "original"
         ? html`<button
             class="danger"
-            data-on:click="$_deleteTarget='${b.name}'; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').showModal()"
+            data-on:click="$_deleteTarget='${b.name}'; $_deleteSource='${b.source}'; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').showModal()"
           >
             Delete
           </button>`
@@ -163,7 +183,7 @@ const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
           : ""}
       </td>
       <td>${label}</td>
-      <td>${formatBytes(b.size)}</td>
+      <td><code>${formatBytes(b.size)}</code></td>
       <td class="backup-actions-cell">
         <div class="button-group">
           ${deleteBtn}
@@ -177,7 +197,7 @@ const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
 
 export function activeDbIndicator(name: string, active: boolean) {
   return html`<span id="active-db-indicator" class="active-db-indicator">
-    <span class="active-db-dot${active ? "" : " active-db-dot--none"}"></span>
+    <span class="active-db-dot ${active ? "" : "active-db-dot--none"}"></span>
     <span class="active-db-name">${name}</span>
   </span>`;
 }
@@ -186,27 +206,38 @@ export function storageView(opts: {
   entries: BackupEntry[];
   basePath: string;
   activeDatabase: string | undefined;
+  s3?: boolean;
 }) {
-  const { entries, basePath, activeDatabase } = opts;
+  const { entries, basePath, activeDatabase, s3 } = opts;
   const base = basePath.replace(/\/$/, "");
   const activeDbName = activeDatabase
     ? basename(activeDatabase)
     : "No database";
 
+  const localEntries = entries.filter((e) => e.source === "local");
+  const s3Entries = entries.filter((e) => e.source === "s3");
+
   const uploadScript = html`<script>
-    ${raw(uploadZoneScript)}
-    document.getElementById("upload-zone").addEventListener("upload-zone:success", function () {
-      window.location.reload();
-    });
-    document.getElementById("upload-zone").addEventListener("upload-zone:error", function (e) {
-      var container = document.getElementById("toast-container");
-      if (!container) return;
-      var el = document.createElement("div");
-      el.className = "toast toast-error";
-      el.setAttribute("role", "alert");
-      el.innerHTML = '<div class="toast-content"><div class="toast-title">Upload failed</div><div class="toast-body">' + e.detail.message + '</div></div><button class="toast-dismiss" onclick="this.closest(&quot;.toast&quot;).remove()" aria-label="Dismiss"></button>';
-      container.prepend(el);
-    });
+    ${raw(uploadZoneScript)};
+    document
+      .getElementById("upload-zone")
+      .addEventListener("upload-zone:success", function () {
+        window.location.reload();
+      });
+    document
+      .getElementById("upload-zone")
+      .addEventListener("upload-zone:error", function (e) {
+        var container = document.getElementById("toast-container");
+        if (!container) return;
+        var el = document.createElement("div");
+        el.className = "toast toast-error";
+        el.setAttribute("role", "alert");
+        el.innerHTML =
+          '<div class="toast-content"><div class="toast-title">Upload failed</div><div class="toast-body">' +
+          e.detail.message +
+          '</div></div><button class="toast-dismiss" onclick="this.closest(&quot;.toast&quot;).remove()" aria-label="Dismiss"></button>';
+        container.prepend(el);
+      });
   </script>`;
 
   const deleteDialog = html`<dialog
@@ -234,18 +265,74 @@ export function storageView(opts: {
       <button
         class="danger"
         data-attr:disabled="$_deleteConfirm !== $_deleteTarget"
-        data-on:click="@delete('${base}/storage/' + $_deleteTarget); $_deleteTarget=''; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').close()"
+        data-on:click="@delete($_deleteSource === 's3' ? '${base}/storage/s3/' + $_deleteTarget : '${base}/storage/' + $_deleteTarget); $_deleteSource=''; $_deleteTarget=''; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').close()"
       >
         Delete
       </button>
     </div>
   </dialog>`;
 
-  const rows = storageListRows(entries, base, activeDatabase);
+  const localTable = html`<div class="storage-card">
+    <table class="storage-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Created</th>
+          <th>Size</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="storage-list">
+        ${storageListRows(localEntries, base, activeDatabase, "local")}
+      </tbody>
+    </table>
+  </div>`;
+
+  const s3Table = s3
+    ? html`<div class="storage-card">
+        <div class="storage-card-header">S3 Backups</div>
+        <table class="storage-table">
+          <thead>
+            <tr>
+              <th style="border-radius: 0;">File</th>
+              <th>Created</th>
+              <th>Size</th>
+              <th style="border-radius: 0;"></th>
+            </tr>
+          </thead>
+          <tbody id="storage-list-s3">
+            ${storageListRows(s3Entries, base, activeDatabase, "s3")}
+          </tbody>
+        </table>
+      </div>`
+    : "";
+
+  const dropzone = html`<div class="storage-dropzone-card">
+    <input
+      type="file"
+      id="upload-input"
+      accept=".db,.sqlite"
+      style="display:none"
+    />
+    <label
+      for="upload-input"
+      id="upload-zone"
+      class="upload-zone"
+      data-upload-url="${base}/storage/upload"
+    >
+      ${iconUpload(24)}
+      <span class="upload-zone-title">
+        Drag &amp; drop a database file here
+      </span>
+      <span class="upload-zone-subtitle">
+        or click to select (.db, .sqlite)
+      </span>
+    </label>
+  </div>`;
 
   return html`<div
     id="storage-view"
-    data-signals="{_deleteTarget:'', _deleteConfirm:''}"
+    data-signals="{_deleteTarget:'', _deleteSource:'', _deleteConfirm:''}"
   >
     <style>
       ${raw(styles)}
@@ -266,43 +353,7 @@ export function storageView(opts: {
         : ""}
     </div>
     <div class="storage-container">
-      <div class="storage-card">
-        <table class="storage-table">
-          <thead>
-            <tr>
-              <th>File</th>
-              <th>Created</th>
-              <th>Size</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="storage-list">
-            ${rows}
-          </tbody>
-        </table>
-        <div class="storage-card-footer">
-          <input
-            type="file"
-            id="upload-input"
-            accept=".db,.sqlite"
-            style="display:none"
-          />
-          <label
-            for="upload-input"
-            id="upload-zone"
-            class="upload-zone"
-            data-upload-url="${base}/storage/upload"
-          >
-            ${iconUpload(24)}
-            <span class="upload-zone-title">
-              Drag &amp; drop a database file here
-            </span>
-            <span class="upload-zone-subtitle">
-              or click to select (.db, .sqlite)
-            </span>
-          </label>
-        </div>
-      </div>
+      ${localTable} ${s3Table} ${dropzone}
     </div>
 
     ${uploadScript} ${deleteDialog}

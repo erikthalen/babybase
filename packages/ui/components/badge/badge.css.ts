@@ -11,6 +11,7 @@ export const badgeCss = css`
   text-transform: uppercase;
   background: var(--pb-badge-bg, #a1a1aa);
   color: var(--pb-badge-fg, #27272a);
+  user-select: none;
 }
 .badge.pk {
   background: var(--pb-badge-pk-bg, #faa087);
@@ -31,5 +32,9 @@ export const badgeCss = css`
 .badge.active {
   background: var(--pb-badge-active-bg, rgba(34, 197, 94, 0.12));
   color: var(--pb-badge-active-fg, #4ade80);
+}
+.badge.s3 {
+  background: var(--pb-badge-s3-bg, rgba(56, 189, 248, 0.12));
+  color: var(--pb-badge-s3-fg, #38bdf8);
 }
 `;

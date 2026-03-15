@@ -10,7 +10,7 @@ table {
   min-width: 100%;
   width: max-content;
 
-  border-radius: 12px 12px 0 0;
+  border-radius: 12px;
   user-select: text;
 }
 

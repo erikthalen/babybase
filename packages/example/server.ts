@@ -8,6 +8,12 @@ type AppEnv = { Variables: { db: DatabaseSync | null } };
 
 const { app: babybase, getDb } = defineBabybase({
   database: "./chinook.db",
+  storage: {
+    endpoint: process.env.S3_ENDPOINT!,
+    bucket: process.env.S3_BUCKET!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+  },
 });
 
 const app = new Hono<AppEnv>();

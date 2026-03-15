@@ -194,10 +194,7 @@ export function migrationsView(opts: {
       <p class="confirm-dialog-body">
         This action cannot be undone. Type the filename to confirm:
       </p>
-      <code
-        class="confirm-dialog-name"
-        data-text="$_migDeleteTarget"
-      ></code>
+      <code class="confirm-dialog-name" data-text="$_migDeleteTarget"></code>
       <span class="confirm-dialog-label">Filename</span>
       <input
         data-bind:_mig-delete-confirm
@@ -344,11 +341,19 @@ export function migrationsView(opts: {
       </style>
       ${dialog} ${sqlDialog} ${deleteDialog}
       <div class="migrations-controls">
-        ${raw(
-          hasPending
-            ? `<div class="button-group" style="view-transition-name: button-group-1;"><button class="primary" data-on:click="@post('${base}/migrations/run-all')">Run all pending</button></div>`
-            : "",
-        )}
+        ${hasPending
+          ? html`<div
+              class="button-group"
+              style="view-transition-name: button-group-1;"
+            >
+              <button
+                class="primary"
+                data-on:click="@post('${base}/migrations/run-all')"
+              >
+                Run all pending
+              </button>
+            </div>`
+          : ""}
         <div class="button-group" style="view-transition-name: button-group-2;">
           <button
             data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"

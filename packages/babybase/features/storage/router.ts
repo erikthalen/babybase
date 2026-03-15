@@ -1,5 +1,5 @@
-import { readFileSync, statSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { basename, join } from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { Hono } from "hono";
 import { html } from "hono/html";
@@ -11,16 +11,18 @@ import type { S3Config } from "../../types.ts";
 import {
   type BackupEntry,
   createBackup,
-  deleteBackup,
+  createBackupToS3,
   deleteFromS3,
+  getFromS3,
   listBackups,
+  listS3Backups,
   readSettings,
   registerBackup,
+  s3Key,
   saveUploadedDb,
-  uploadToS3,
   writeSettings,
 } from "./queries.ts";
-import { storageListRows, storageView } from "./views.ts";
+import { storageView } from "./views.ts";
 
 function makeOriginalEntry(dbPath: string): BackupEntry {
   let size = 0;
@@ -38,17 +40,26 @@ function makeOriginalEntry(dbPath: string): BackupEntry {
     size,
     createdAt,
     type: "original",
+    source: "local",
   };
 }
 
-function buildEntries(
+async function buildEntries(
   originalDatabase: string | undefined,
-  storageDir: string,
-): BackupEntry[] {
-  return [
-    ...(originalDatabase ? [makeOriginalEntry(originalDatabase)] : []),
-    ...listBackups(storageDir),
-  ];
+  storageDir: string | undefined,
+  s3: S3Config | undefined,
+  settingsDir: string,
+): Promise<BackupEntry[]> {
+  const original = originalDatabase
+    ? [makeOriginalEntry(originalDatabase)]
+    : [];
+  if (s3) {
+    const mounted = listBackups(join(settingsDir, "mounts"));
+    const s3Backups = await listS3Backups(s3);
+    return [...original, ...mounted, ...s3Backups];
+  }
+  const localBackups = storageDir ? listBackups(storageDir) : [];
+  return [...original, ...localBackups];
 }
 
 export function createStorageRouter(opts: {
@@ -57,9 +68,20 @@ export function createStorageRouter(opts: {
   unmountDb: () => void;
   dbOpenError?: string;
   dbOpenFailedPath?: string;
+  settingsDir: string;
+  storageDir?: string;
   s3?: S3Config;
 }): Hono<AppEnv> {
-  const { originalDatabase, mountDb, unmountDb, dbOpenError, dbOpenFailedPath, s3 } = opts;
+  const {
+    originalDatabase,
+    mountDb,
+    unmountDb,
+    dbOpenError,
+    dbOpenFailedPath,
+    settingsDir,
+    storageDir,
+    s3,
+  } = opts;
   const app = new Hono<AppEnv>();
 
   app.get("/", async (c) => {
@@ -67,8 +89,13 @@ export function createStorageRouter(opts: {
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
     const tables = db ? listTables(db) : [];
-    const entries = buildEntries(originalDatabase, config.storageDir);
-    const content = storageView({ entries, basePath: base, activeDatabase: config.database });
+    const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
+    const content = storageView({
+      entries,
+      basePath: base,
+      activeDatabase: config.database,
+      s3: !!s3,
+    });
     const navHtml = nav({
       basePath: base,
       activeSection: "storage",
@@ -101,44 +128,39 @@ export function createStorageRouter(opts: {
   app.post("/", async (c) => {
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
-    if (!config.database) {
-      return c.json({ error: "No database mounted" }, 400);
-    }
-    const backupName = createBackup(config.database, config.storageDir);
-    const babybaseDir = dirname(config.storageDir);
-    try {
-      const currentSettings = readSettings(babybaseDir);
-      const updatedSettings = registerBackup(
-        currentSettings,
-        backupName,
-        basename(config.database),
-      );
-      writeSettings(babybaseDir, updatedSettings);
-    } catch {
-      // settings write failed — backup exists but origin won't be registered
-    }
+    if (!config.database) return c.json({ error: "No database mounted" }, 400);
 
-    // Auto-upload to S3 if configured
-    let s3Key: string | undefined;
+    let backupName: string;
     if (s3) {
-      try {
-        s3Key = await uploadToS3(join(config.storageDir, backupName), s3);
-      } catch {
-        // S3 upload failure is non-fatal — backup is still saved locally
-      }
+      backupName = await createBackupToS3(config.database, s3);
+    } else {
+      backupName = createBackup(config.database, storageDir!);
     }
 
-    const entries = buildEntries(originalDatabase, config.storageDir);
+    try {
+      const current = readSettings(settingsDir);
+      writeSettings(
+        settingsDir,
+        registerBackup(current, backupName, basename(config.database)),
+      );
+    } catch {
+      // settings write failed — backup still exists
+    }
+
+    const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
         html`<main id="main">
-          ${storageView({ entries, basePath: base, activeDatabase: config.database })}
+          ${storageView({
+            entries,
+            basePath: base,
+            activeDatabase: config.database,
+            s3: !!s3,
+          })}
         </main>`,
       );
       await patchElements(
-        s3Key
-          ? toastHtml("Backup created", html`Saved as <code>${backupName}</code> and uploaded to S3 as <code>${s3Key}</code>.`)
-          : toastHtml("Backup created", html`Saved as <code>${backupName}</code>.`),
+        toastHtml("Backup created", html`Saved as <code>${backupName}</code>.`),
         { selector: "#toast-container", mode: "prepend" },
       );
     });
@@ -147,15 +169,16 @@ export function createStorageRouter(opts: {
   // Upload an external database file
   app.post("/upload", async (c) => {
     const config = c.get("config");
+    const uploadDir = storageDir ?? settingsDir;
     try {
       const body = await c.req.parseBody();
       const file = body.file;
       if (file instanceof File && file.size > 0) {
         const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const data = Buffer.from(await file.arrayBuffer());
-        saveUploadedDb(config.storageDir, safe, data);
+        saveUploadedDb(uploadDir, safe, data);
         if (!config.database) {
-          mountDb(join(config.storageDir, safe));
+          mountDb(join(uploadDir, safe));
         }
       }
     } catch {
@@ -164,28 +187,22 @@ export function createStorageRouter(opts: {
     return c.json({ ok: true });
   });
 
-  // Delete a backup or uploaded file
-  app.delete("/:name", async (c) => {
+  // Delete an S3 backup (also removes local mounted copy if present)
+  app.delete("/s3/:name", async (c) => {
+    if (!s3) return c.json({ error: "S3 not configured" }, 400);
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
-    const deletedPath = join(config.storageDir, name);
-    const wasActive = deletedPath === config.database;
-    try {
-      deleteBackup(config.storageDir, name);
-    } catch {
-      // file already gone
-    }
-    if (s3) {
-      const key = s3.keyPrefix ? `${s3.keyPrefix.replace(/\/$/, "")}/${name}` : name;
-      deleteFromS3(key, s3).catch(() => {/* non-fatal */});
-    }
-    if (wasActive) {
-      unmountDb();
-    }
-    const entries = buildEntries(originalDatabase, config.storageDir);
-    if (wasActive) {
-      return sseAction(c, async ({ patchElements }) => {
+
+    deleteFromS3(s3Key(name, s3), s3).catch(() => { /* non-fatal */ });
+    const localPath = join(settingsDir, "mounts", name);
+    const wasActive = localPath === config.database;
+    if (wasActive) unmountDb();
+    try { unlinkSync(localPath); } catch { /* not present locally */ }
+
+    const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
+    return sseAction(c, async ({ patchElements }) => {
+      if (wasActive) {
         await patchElements(
           navElement({
             basePath: base,
@@ -195,33 +212,101 @@ export function createStorageRouter(opts: {
           }),
           { useViewTransition: true },
         );
+      }
+      await patchElements(
+        html`<main id="main">
+          ${storageView({
+            entries,
+            basePath: base,
+            activeDatabase: config.database,
+            s3: !!s3,
+          })}
+        </main>`,
+        { useViewTransition: true },
+      );
+    });
+  });
+
+  // Delete a local backup or mounted copy (never touches S3)
+  app.delete("/:name", async (c) => {
+    const config = c.get("config");
+    const base = config.basePath.replace(/\/$/, "");
+    const name = decodeURIComponent(c.req.param("name"));
+
+    // When S3 is configured, local entries live in the mounts/ dir
+    const localPath = s3
+      ? join(settingsDir, "mounts", name)
+      : join(storageDir!, name);
+    const wasActive = localPath === config.database;
+    if (wasActive) unmountDb();
+    try { unlinkSync(localPath); } catch { /* file already gone */ }
+
+    const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
+    return sseAction(c, async ({ patchElements }) => {
+      if (wasActive) {
         await patchElements(
-          html`<main id="main">
-            ${storageView({ entries, basePath: base, activeDatabase: config.database })}
-          </main>`,
+          navElement({
+            basePath: base,
+            activeSection: "storage",
+            hasDatabase: false,
+            readonly: config.readonly,
+          }),
           { useViewTransition: true },
         );
-      });
-    }
-    return sseAction(c, async ({ patchElements }) => {
+      }
       await patchElements(
-        html`<tbody id="storage-list">
-          ${storageListRows(entries, base, config.database)}
-        </tbody>`,
+        html`<main id="main">
+          ${storageView({
+            entries,
+            basePath: base,
+            activeDatabase: config.database,
+            s3: !!s3,
+          })}
+        </main>`,
         { useViewTransition: true },
       );
     });
   });
 
   // Download a database or backup file
-  app.get("/:name/download", (c) => {
-    const config = c.get("config");
+  app.get("/:name/download", async (c) => {
     const name = decodeURIComponent(c.req.param("name"));
-    const filePath =
-      name === "~original" ? originalDatabase : join(config.storageDir, name);
-    if (!filePath) return c.json({ error: "Not found" }, 404);
     const filename =
       name === "~original" ? basename(originalDatabase ?? "database.db") : name;
+
+    if (name === "~original") {
+      if (!originalDatabase) return c.json({ error: "Not found" }, 404);
+      try {
+        const data = readFileSync(originalDatabase);
+        return new Response(data, {
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Content-Disposition": `attachment; filename="${filename}"`,
+            "Content-Length": String(data.length),
+          },
+        });
+      } catch {
+        return c.json({ error: "File not found" }, 404);
+      }
+    }
+
+    if (s3) {
+      try {
+        const data = await getFromS3(s3Key(name, s3), s3);
+        return new Response(new Uint8Array(data), {
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Content-Disposition": `attachment; filename="${filename}"`,
+            "Content-Length": String(data.length),
+          },
+        });
+      } catch {
+        return c.json({ error: "File not found" }, 404);
+      }
+    }
+
+    // Local
+    const filePath = join(storageDir!, name);
     try {
       const data = readFileSync(filePath);
       return new Response(data, {
@@ -241,13 +326,29 @@ export function createStorageRouter(opts: {
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
-    const newPath =
-      name === "~original" ? originalDatabase : join(config.storageDir, name);
-    if (!newPath) {
-      return c.json({ error: "No original database configured" }, 400);
+
+    let newPath: string;
+    if (name === "~original") {
+      if (!originalDatabase)
+        return c.json({ error: "No original database configured" }, 400);
+      newPath = originalDatabase;
+    } else if (s3) {
+      // Download from S3 to .babybase/mounts/, then mount the local copy
+      const mountsDir = join(settingsDir, "mounts");
+      mkdirSync(mountsDir, { recursive: true });
+      newPath = join(mountsDir, name);
+      try {
+        const data = await getFromS3(s3Key(name, s3), s3);
+        writeFileSync(newPath, data);
+      } catch {
+        return c.json({ error: "Could not download from S3" }, 500);
+      }
+    } else {
+      newPath = join(storageDir!, name);
     }
+
     mountDb(newPath);
-    const entries = buildEntries(originalDatabase, config.storageDir);
+    const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(
         navElement({
@@ -260,7 +361,12 @@ export function createStorageRouter(opts: {
       );
       await patchElements(
         html`<main id="main">
-          ${storageView({ entries, basePath: base, activeDatabase: config.database })}
+          ${storageView({
+            entries,
+            basePath: base,
+            activeDatabase: config.database,
+            s3: !!s3,
+          })}
         </main>`,
         { useViewTransition: true },
       );

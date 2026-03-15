@@ -17,30 +17,33 @@ export type AppEnv = {
       database: string | undefined;
       basePath: string;
       migrationsDir: string;
-      storageDir: string;
+      settingsDir: string;
       readonly: boolean;
     };
   };
 };
 
 export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>; getDb: () => DatabaseSync | null } {
-  const storageDir = typeof config.storage === "string"
+  const storageDir: string | undefined = typeof config.storage === "string"
     ? config.storage
-    : "./.babybase/storage";
+    : config.storage === undefined
+      ? "./.babybase/storage"
+      : undefined; // S3 — no local storage dir
   const s3: S3Config | undefined = config.storage && typeof config.storage === "object"
     ? config.storage
     : undefined;
+  const settingsDir = storageDir ? dirname(storageDir) : ".babybase";
 
   const resolved: AppEnv["Variables"]["config"] = {
     database: config.database,
     basePath: config.basePath ?? "/",
     migrationsDir: config.migrationsDir ?? "./.babybase/migrations",
-    storageDir,
+    settingsDir,
     readonly: config.readonly ?? false,
   };
 
   const originalDatabase = config.database;
-  const babybaseDir = dirname(resolved.storageDir);
+  const babybaseDir = settingsDir;
 
   // Override active database if a settings file exists from a previous mount
   const settings = readSettings(babybaseDir);
@@ -114,7 +117,8 @@ export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>
     startAutoBackupScheduler(
       config.autoBackup,
       () => resolved.database,
-      resolved.storageDir,
+      settingsDir,
+      storageDir,
       s3,
     );
   }
@@ -122,7 +126,7 @@ export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>
   app.route("/tables", createTablesRouter());
   app.route("/schema", createSchemaRouter());
   app.route("/migrations", createMigrationsRouter());
-  app.route("/storage", createStorageRouter({ originalDatabase, mountDb, unmountDb, dbOpenError, dbOpenFailedPath, s3 }));
+  app.route("/storage", createStorageRouter({ originalDatabase, mountDb, unmountDb, dbOpenError, dbOpenFailedPath, settingsDir, storageDir, s3 }));
 
   // Graceful shutdown handler
   function shutdown() {

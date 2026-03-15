@@ -197,18 +197,22 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
               transform: translateX(20px);
             }
           }
+
           ::view-transition-new(nav-schema),
           ::view-transition-new(nav-migrations) {
             animation: nav-link-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
           }
+
           ::view-transition-old(nav-schema),
           ::view-transition-old(nav-migrations) {
             animation: nav-link-out 0.2s ease;
           }
+
           .floating-nav a.active {
             background: rgba(255, 255, 255, 0.1);
             color: #fafafa;
           }
+
           main {
             width: 100%;
             overflow: auto;
@@ -278,6 +282,39 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
           .tab-bar a.active {
             background: rgb(51 51 51);
             color: #fafafa;
+          }
+
+          @keyframes fade-in {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+          @keyframes fade-out {
+            from {
+              opacity: 1;
+            }
+            to {
+              opacity: 0;
+            }
+          }
+
+          ::view-transition-old(button-group-1) {
+            animation: fade-out 200ms ease;
+          }
+
+          ::view-transition-new(button-group-1) {
+            animation: fade-in 200ms ease;
+          }
+
+          ::view-transition-old(button-group-1),
+          ::view-transition-new(button-group-1) {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            object-fit: none;
           }
         </style>
       </head>

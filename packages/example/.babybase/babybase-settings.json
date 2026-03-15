@@ -1,84 +1,36 @@
 {
   "databases": {
+    "chinook.db.2026-03-15T11-56-06-843Z-737666.bak": {
+      "database": "chinook.db"
+    },
     "chinook.db": {
-      "hiddenColumns": {
-        "customers": [
-          "Country",
-          "Company",
-          "City",
-          "PostalCode",
-          "Phone",
-          "FaxName"
-        ]
-      },
       "camera": {
-        "x": -71,
-        "y": -830,
-        "z": 1
+        "x": 341.1018507944112,
+        "y": 125.14065917956243,
+        "z": 0.5411842281606095
       },
       "tablePositions": {
-        "customers": {
-          "x": 710.39,
-          "y": 59.9224
-        },
-        "invoices": {
-          "x": 710,
-          "y": 692
-        },
         "invoice_items": {
-          "x": 370.12109375,
-          "y": 692.12109375
-        },
-        "playlists": {
           "x": 370,
-          "y": 1108
-        },
-        "tracks": {
-          "x": 710,
-          "y": 1108
+          "y": 692
         }
       }
     },
-    "chinook.2026-03-04T22-11-23-163Z-890416.bak.db": {
-      "camera": {
-        "x": 422.2460335420323,
-        "y": 89.95606195645826,
-        "z": 0.5814592752494534
-      },
-      "tablePositions": {
-        "invoice_items": {
-          "x": 372.1824465798062,
-          "y": 371.24802553065507
-        },
-        "invoices": {
-          "x": 1171.0232151301946,
-          "y": 1137.61
-        },
-        "playlists": {
-          "x": 28.76855588061329,
-          "y": 879.1053410737379
-        },
-        "customers": {
-          "x": 710.139,
-          "y": 60
-        }
-      }
-    },
-    "chinook.db.2026-03-13T20-11-08-781Z-247333.bak": {
+    "chinook.db.2026-03-15T12-02-59-539Z-129666.bak": {
       "database": "chinook.db"
     },
-    "chinook.db.2026-03-13T20-13-50-289Z-797833.bak": {
+    "chinook.db.2026-03-15T12-02-59-539Z-129666.bak.2026-03-15T12-19-23-496Z-410833.bak": {
+      "database": "chinook.db.2026-03-15T12-02-59-539Z-129666.bak"
+    },
+    "chinook.db.2026-03-15T16-42-25-952Z-807583.bak": {
       "database": "chinook.db"
     },
-    "chinook.db.2026-03-13T20-27-17-176Z-479041.bak": {
+    "chinook.db.2026-03-15T16-54-24-586Z-834833.bak": {
       "database": "chinook.db"
     },
-    "chinook.db.2026-03-13T20-29-29-494Z-318958.bak": {
-      "database": "chinook.db"
-    },
-    "chinook.db.2026-03-13T20-30-14-724Z-018083.bak": {
+    "chinook.db.2026-03-15T18-25-39-446Z-284083.bak": {
       "database": "chinook.db"
     }
   },
-  "activeDatabase": "./chinook.db"
+  "activeDatabase": ".babybase/mounts/chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
 }

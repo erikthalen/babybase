@@ -12,6 +12,7 @@ export const badgeExample = {
       <span class="badge upload">upload</span>
       <span class="badge original">original</span>
       <span class="badge active">active</span>
+      <span class="badge s3">S3</span>
     </div>`,
 
   markup: html`<span class="badge">default</span>
@@ -19,5 +20,6 @@ export const badgeExample = {
 <span class="badge fk">fk</span>
 <span class="badge upload">upload</span>
 <span class="badge original">original</span>
-<span class="badge active">active</span>`,
+<span class="badge active">active</span>
+<span class="badge s3">S3</span>`,
 };

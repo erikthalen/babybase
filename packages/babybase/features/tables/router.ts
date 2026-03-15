@@ -1,4 +1,4 @@
-import { basename, dirname } from "node:path";
+import { basename } from "node:path";
 import { Hono } from "hono";
 import { layout, nav } from "../../components/layout.ts";
 import { respond, sseAction } from "../../components/sse.ts";
@@ -25,13 +25,12 @@ export function createTablesRouter(): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
 
   function resolveHiddenColumns(
-    storageDir: string,
+    settingsDir: string,
     database: string | undefined,
     tableName: string,
   ): string[] {
     if (!database) return [];
-    const babybaseDir = dirname(storageDir);
-    const settings = readSettings(babybaseDir);
+    const settings = readSettings(settingsDir);
     return getHiddenColumns(settings, basename(database), tableName);
   }
 
@@ -76,7 +75,7 @@ export function createTablesRouter(): Hono<AppEnv> {
         : undefined;
     const search = c.req.query("search")?.trim() || undefined;
     const hiddenColumns = resolveHiddenColumns(
-      config.storageDir,
+      config.settingsDir,
       config.database,
       tableName,
     );
@@ -150,15 +149,14 @@ export function createTablesRouter(): Hono<AppEnv> {
     }
 
     // Read current state and toggle
-    const babybaseDir = dirname(config.storageDir);
     const dbName = basename(config.database);
-    const settings = readSettings(babybaseDir);
+    const settings = readSettings(config.settingsDir);
     const currentHidden = getHiddenColumns(settings, dbName, tableName);
     const newHidden = currentHidden.includes(colName)
       ? currentHidden.filter((col) => col !== colName)
       : [...currentHidden, colName];
     writeSettings(
-      babybaseDir,
+      config.settingsDir,
       setHiddenColumns(settings, dbName, tableName, newHidden),
     );
 
@@ -219,7 +217,7 @@ export function createTablesRouter(): Hono<AppEnv> {
     const total = countRows(db, tableName);
     const rows = getRows(db, tableName, { limit: LIMIT, offset: 0 });
     const hiddenCols = resolveHiddenColumns(
-      config.storageDir,
+      config.settingsDir,
       config.database,
       tableName,
     );

@@ -7,9 +7,29 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import type { S3Config } from "../../types.ts";
+
+function makeS3Client(s3: S3Config): S3Client {
+  return new S3Client({
+    endpoint: s3.endpoint,
+    region: s3.region ?? "garage",
+    credentials: { accessKeyId: s3.accessKeyId, secretAccessKey: s3.secretAccessKey },
+    forcePathStyle: true,
+  });
+}
+
+export function s3Key(name: string, s3: S3Config): string {
+  return s3.keyPrefix ? `${s3.keyPrefix.replace(/\/$/, "")}/${name}` : name;
+}
 
 export interface BackupEntry {
   name: string;
@@ -17,6 +37,7 @@ export interface BackupEntry {
   size: number;
   createdAt: Date;
   type: "backup" | "upload" | "original";
+  source: "local" | "s3";
 }
 
 export function createBackup(dbPath: string, storageDir: string): string {
@@ -51,6 +72,7 @@ export function listBackups(storageDir: string): BackupEntry[] {
         size: stat.size,
         createdAt: stat.birthtime,
         type,
+        source: "local" as const,
       };
     })
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -250,24 +272,10 @@ export function setTablePosition(
   };
 }
 
-export async function uploadToS3(
-  filePath: string,
-  s3: S3Config,
-): Promise<string> {
-  const client = new S3Client({
-    endpoint: s3.endpoint,
-    region: s3.region ?? "garage",
-    credentials: {
-      accessKeyId: s3.accessKeyId,
-      secretAccessKey: s3.secretAccessKey,
-    },
-    forcePathStyle: true,
-  });
-  const key = s3.keyPrefix
-    ? `${s3.keyPrefix.replace(/\/$/, "")}/${basename(filePath)}`
-    : basename(filePath);
+export async function uploadToS3(filePath: string, s3: S3Config): Promise<string> {
+  const key = s3Key(basename(filePath), s3);
   const body = readFileSync(filePath);
-  await client.send(
+  await makeS3Client(s3).send(
     new PutObjectCommand({
       Bucket: s3.bucket,
       Key: key,
@@ -280,16 +288,47 @@ export async function uploadToS3(
 }
 
 export async function deleteFromS3(key: string, s3: S3Config): Promise<void> {
-  const client = new S3Client({
-    endpoint: s3.endpoint,
-    region: s3.region ?? "garage",
-    credentials: {
-      accessKeyId: s3.accessKeyId,
-      secretAccessKey: s3.secretAccessKey,
-    },
-    forcePathStyle: true,
-  });
-  await client.send(new DeleteObjectCommand({ Bucket: s3.bucket, Key: key }));
+  await makeS3Client(s3).send(new DeleteObjectCommand({ Bucket: s3.bucket, Key: key }));
+}
+
+export async function getFromS3(key: string, s3: S3Config): Promise<Buffer> {
+  const resp = await makeS3Client(s3).send(new GetObjectCommand({ Bucket: s3.bucket, Key: key }));
+  if (!resp.Body) throw new Error("Empty S3 response");
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of resp.Body as AsyncIterable<Uint8Array>) chunks.push(chunk);
+  return Buffer.concat(chunks);
+}
+
+export async function listS3Backups(s3: S3Config): Promise<BackupEntry[]> {
+  const prefix = s3.keyPrefix ? `${s3.keyPrefix.replace(/\/$/, "")}/` : undefined;
+  const resp = await makeS3Client(s3).send(
+    new ListObjectsV2Command({ Bucket: s3.bucket, Prefix: prefix }),
+  );
+  return (resp.Contents ?? [])
+    .filter((obj) => obj.Key && /\.(bak|db|sqlite)$/.test(obj.Key))
+    .map((obj) => ({
+      name: basename(obj.Key!),
+      path: `${s3.endpoint.replace(/\/$/, "")}/${s3.bucket}/${obj.Key!}`,
+      size: obj.Size ?? 0,
+      createdAt: obj.LastModified ?? new Date(0),
+      type: "backup" as const,
+      source: "s3" as const,
+    }))
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+export async function createBackupToS3(dbPath: string, s3: S3Config): Promise<string> {
+  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  const nano = process.hrtime.bigint().toString().slice(-6);
+  const name = `${basename(dbPath)}.${ts}-${nano}.bak`;
+  const tempPath = join(tmpdir(), name);
+  cpSync(dbPath, tempPath);
+  try {
+    await uploadToS3(tempPath, s3);
+  } finally {
+    try { unlinkSync(tempPath); } catch { /* already gone */ }
+  }
+  return name;
 }
 
 /** Return updated Settings registering a backup as pointing to its original. */
