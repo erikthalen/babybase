@@ -115,9 +115,13 @@ export function createSchemaRouter(): Hono<AppEnv> {
         `CREATE TABLE IF NOT EXISTS ${JSON.stringify(name)} (id INTEGER PRIMARY KEY)`,
       );
     }
+    const settings = readSettings(config.settingsDir);
+    const dbName = config.database ? basename(config.database) : undefined;
+    const camera = dbName ? getCameraState(settings, dbName) : undefined;
+    const savedPositions = dbName ? getTablePositions(settings, dbName) : {};
     const schema = getFullSchema(db);
     const pending = getPendingColumnsMap(db);
-    const content = erDiagramView(schema, base, pending, config.database);
+    const content = erDiagramView(schema, base, pending, config.database, config.readonly, camera, savedPositions);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(html`<main id="main">${content}</main>`);
     });
@@ -174,9 +178,13 @@ export function createSchemaRouter(): Hono<AppEnv> {
         filename,
       );
     }
+    const settings = readSettings(config.settingsDir);
+    const dbName = config.database ? basename(config.database) : undefined;
+    const camera = dbName ? getCameraState(settings, dbName) : undefined;
+    const savedPositions = dbName ? getTablePositions(settings, dbName) : {};
     const schema = getFullSchema(db);
     const pending = getPendingColumnsMap(db);
-    const content = erDiagramView(schema, base, pending, config.database);
+    const content = erDiagramView(schema, base, pending, config.database, config.readonly, camera, savedPositions);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(html`<main id="main">${content}</main>`);
     });
@@ -333,9 +341,13 @@ export function createSchemaRouter(): Hono<AppEnv> {
       savePendingChanges(db, effectiveTableName, cols);
     }
 
+    const settings = readSettings(config.settingsDir);
+    const dbName = config.database ? basename(config.database) : undefined;
+    const camera = dbName ? getCameraState(settings, dbName) : undefined;
+    const savedPositions = dbName ? getTablePositions(settings, dbName) : {};
     const schema = getFullSchema(db);
     const pending = getPendingColumnsMap(db);
-    const content = erDiagramView(schema, base, pending, config.database);
+    const content = erDiagramView(schema, base, pending, config.database, config.readonly, camera, savedPositions);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(html`<main id="main">${content}</main>`);
     });
@@ -400,11 +412,15 @@ export function createSchemaRouter(): Hono<AppEnv> {
     const db = c.get("db")!;
     const config = c.get("config");
     const base = config.basePath.replace(/\/$/, "");
+    const settings = readSettings(config.settingsDir);
+    const dbName = config.database ? basename(config.database) : undefined;
+    const camera = dbName ? getCameraState(settings, dbName) : undefined;
+    const savedPositions = dbName ? getTablePositions(settings, dbName) : {};
 
     const allPending = getAllPendingChanges(db);
     if (allPending.length === 0) {
       const schema = getFullSchema(db);
-      const content = erDiagramView(schema, base, new Map(), config.database);
+      const content = erDiagramView(schema, base, new Map(), config.database, config.readonly, camera, savedPositions);
       return sseAction(c, async ({ patchElements }) => {
         await patchElements(html`<main id="main">${content}</main>`);
       });
@@ -449,7 +465,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
     clearPendingChanges(db);
 
     const schema = getFullSchema(db);
-    const content = erDiagramView(schema, base, new Map(), config.database);
+    const content = erDiagramView(schema, base, new Map(), config.database, config.readonly, camera, savedPositions);
     return sseAction(c, async ({ patchElements }) => {
       await patchElements(html`<main id="main">${content}</main>`);
     });

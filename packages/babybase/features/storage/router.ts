@@ -380,5 +380,45 @@ export function createStorageRouter(opts: {
     });
   });
 
+  // Clone an S3 backup to local mounts/ without mounting it
+  app.post("/s3/:name/clone", async (c) => {
+    if (!s3) return c.json({ error: "S3 not configured" }, 400);
+    const config = c.get("config");
+    const base = config.basePath.replace(/\/$/, "");
+    const name = decodeURIComponent(c.req.param("name"));
+
+    const mountsDir = join(settingsDir, "mounts");
+    mkdirSync(mountsDir, { recursive: true });
+    const localPath = join(mountsDir, name);
+    try {
+      const data = await getFromS3(s3Key(name, s3), s3);
+      writeFileSync(localPath, data);
+    } catch {
+      return c.json({ error: "Could not download from S3" }, 500);
+    }
+
+    const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
+    return sseAction(c, async ({ patchElements }) => {
+      await patchElements(
+        html`<main id="main">
+          ${storageView({
+            entries,
+            basePath: base,
+            activeDatabase: config.database,
+            s3: !!s3,
+          })}
+        </main>`,
+        { useViewTransition: true },
+      );
+      await patchElements(
+        toastHtml(
+          "Database cloned",
+          html`<code>${name}</code> saved locally.`,
+        ),
+        { selector: "#toast-container", mode: "prepend" },
+      );
+    });
+  });
+
   return app;
 }

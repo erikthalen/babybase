@@ -20,6 +20,7 @@ export { iconHash } from "./components/icons/hash.ts";
 export { iconKey } from "./components/icons/key.ts";
 export { iconLetterT } from "./components/icons/letter-t.ts";
 export { iconLink } from "./components/icons/link.ts";
+export { iconMenu } from "./components/icons/menu.ts";
 export { iconMinus } from "./components/icons/minus.ts";
 export { iconNavMigrations } from "./components/icons/nav-migrations.ts";
 export { iconNavSchema } from "./components/icons/nav-schema.ts";

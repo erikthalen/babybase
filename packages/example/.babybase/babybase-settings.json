@@ -5,9 +5,9 @@
     },
     "chinook.db": {
       "camera": {
-        "x": 341.1018507944112,
-        "y": 125.14065917956243,
-        "z": 0.5411842281606095
+        "x": 19.250334286550604,
+        "y": -344.5439537152645,
+        "z": 0.7729554820673584
       },
       "tablePositions": {
         "invoice_items": {
@@ -30,7 +30,13 @@
     },
     "chinook.db.2026-03-15T18-25-39-446Z-284083.bak": {
       "database": "chinook.db"
+    },
+    "chinook.db.2026-03-15T18-25-39-446Z-284083.bak.2026-03-17T19-15-29-047Z-648208.bak": {
+      "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+    },
+    "chinook.db.2026-03-17T19-18-26-998Z-175875.bak": {
+      "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
     }
   },
-  "activeDatabase": ".babybase/mounts/chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+  "activeDatabase": "./chinook.db"
 }

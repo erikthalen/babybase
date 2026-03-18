@@ -164,6 +164,11 @@ export function erDiagramView(
     ? (activeDatabase.split("/").pop() ?? activeDatabase)
     : "No database";
 
+  const cix = initialCamera?.x ?? 0;
+  const ciy = initialCamera?.y ?? 0;
+  const ciz = initialCamera?.z ?? 1;
+  const canvasTransform = `matrix(${ciz},0,0,${ciz},${ciz * cix},${ciz * ciy})`;
+
   return html`<style>
       ${diagramStyles}
       ${tableBoxStyles}
@@ -208,7 +213,7 @@ export function erDiagramView(
         <div id="diagram-viewport">
           <div
             id="canvas-wrap"
-            style="width:${canvasW}px;height:${canvasH}px;touch-action: none;"
+            style="width:${canvasW}px;height:${canvasH}px;touch-action: none;transform:${canvasTransform};"
           >
             <svg
               width="${canvasW}"

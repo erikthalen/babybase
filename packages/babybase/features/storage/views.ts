@@ -1,6 +1,14 @@
 import { basename } from "node:path";
 import { html, raw } from "hono/html";
-import { iconCheck, iconUpload, uploadZoneScript } from "@babybase/ui";
+import {
+  iconArrowDown,
+  iconCheck,
+  iconLink,
+  iconMenu,
+  iconUpload,
+  iconX,
+  uploadZoneScript,
+} from "@babybase/ui";
 import type { BackupEntry } from "./queries.ts";
 
 const css = String.raw;
@@ -20,7 +28,6 @@ const styles = css`
     background: var(--pb-surface);
     border: 1px solid var(--pb-border);
     border-radius: 12px;
-    overflow-y: clip;
   }
   .storage-card-header {
     padding: 0.875rem 1.25rem 0.75rem;
@@ -89,6 +96,11 @@ const styles = css`
   .backup-actions-cell {
     justify-content: flex-end;
   }
+  .storage-dropdown-separator {
+    height: 1px;
+    background: var(--pb-border);
+    margin: 0.25rem 0;
+  }
 `;
 
 function formatBytes(b: number): string {
@@ -110,7 +122,8 @@ export function storageListRows(
   }
 
   return entries.map((b, i) => {
-    const isActive = b.source === "local" && !!activeDatabase && b.path === activeDatabase;
+    const isActive =
+      b.source === "local" && !!activeDatabase && b.path === activeDatabase;
     const label =
       b.createdAt.getTime() === 0
         ? "—"
@@ -145,6 +158,8 @@ export function storageListRows(
         ? `${basePath}/storage/~original/mount`
         : `${basePath}/storage/${encodeURIComponent(b.name)}/mount`;
 
+    const cloneUrl = `${basePath}/storage/s3/${encodeURIComponent(b.name)}/clone`;
+
     const downloadUrl =
       b.type === "original"
         ? `${basePath}/storage/~original/download`
@@ -152,24 +167,37 @@ export function storageListRows(
 
     const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
 
-    const mountBtn = isActive
-      ? html`<button disabled style="view-transition-name: ${vtGroup}">
-          <span data-tooltip="Currently mounted" style="display: flex;">
-            ${iconCheck(12)}
-          </span>
-        </button>`
+    const mountItem = isActive
+      ? html`<span
+          class="dropdown-item button"
+          style="opacity:0.4;view-transition-name:${vtGroup}"
+        >
+          ${iconCheck(14)} Mounted
+        </span>`
       : mode === "s3"
-        ? html`<button data-on:click="@post('${mountUrl}')">Clone &amp; mount</button>`
-        : html`<button data-on:click="@post('${mountUrl}')">Mount</button>`;
-
-    const deleteBtn =
-      b.type !== "original"
         ? html`<button
-            class="danger"
-            data-on:click="$_deleteTarget='${b.name}'; $_deleteSource='${b.source}'; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').showModal()"
+            class="dropdown-item"
+            data-on:click="@post('${cloneUrl}')"
           >
-            Delete
+            ${iconLink(14)} Clone to local
           </button>`
+        : html`<button
+            class="dropdown-item"
+            data-on:click="@post('${mountUrl}')"
+          >
+            ${iconLink(14)} Mount
+          </button>`;
+
+    const deleteItem =
+      b.type !== "original"
+        ? html`<div class="storage-dropdown-separator"></div>
+            <button
+              class="dropdown-item"
+              style="color:var(--pb-danger,#f87171)"
+              data-on:click="$_deleteTarget='${b.name}'; $_deleteSource='${b.source}'; $_deleteConfirm=''; document.getElementById('delete-confirm-dialog').showModal()"
+            >
+              ${iconX(14)} Delete
+            </button>`
         : "";
 
     return html`<tr ${isActive ? 'class="active-row"' : ""}>
@@ -183,13 +211,25 @@ export function storageListRows(
           : ""}
       </td>
       <td>${label}</td>
-      <td><code>${formatBytes(b.size)}</code></td>
+      <td>${formatBytes(b.size)}</td>
       <td class="backup-actions-cell">
-        <div class="button-group">
-          ${deleteBtn}
-          <a href="${downloadUrl}" download="${b.name}">Download</a>
-          ${mountBtn}
-        </div>
+        <details
+          class="dropdown"
+          data-on:click__window="if(!evt.target.closest('.dropdown'))evt.target.open=false"
+        >
+          <summary>${iconMenu(14)}</summary>
+          <div class="dropdown-panel">
+            ${mountItem}
+            <a
+              class="dropdown-item button"
+              href="${downloadUrl}"
+              download="${b.name}"
+            >
+              ${iconArrowDown(14)} Download
+            </a>
+            ${deleteItem}
+          </div>
+        </details>
       </td>
     </tr>`;
   });
@@ -352,9 +392,7 @@ export function storageView(opts: {
           </div>`
         : ""}
     </div>
-    <div class="storage-container">
-      ${localTable} ${s3Table} ${dropzone}
-    </div>
+    <div class="storage-container">${localTable} ${s3Table} ${dropzone}</div>
 
     ${uploadScript} ${deleteDialog}
   </div>`;

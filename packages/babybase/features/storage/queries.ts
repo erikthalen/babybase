@@ -40,11 +40,15 @@ export interface BackupEntry {
   source: "local" | "s3";
 }
 
+function stripBackupSuffix(name: string): string {
+  return name.replace(/\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-\d{6}\.bak$/, "");
+}
+
 export function createBackup(dbPath: string, storageDir: string): string {
   mkdirSync(storageDir, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, "-");
   const nano = process.hrtime.bigint().toString().slice(-6);
-  const dbName = basename(dbPath);
+  const dbName = stripBackupSuffix(basename(dbPath));
   const name = `${dbName}.${ts}-${nano}.bak`;
   cpSync(dbPath, join(storageDir, name));
   return name;
@@ -320,7 +324,7 @@ export async function listS3Backups(s3: S3Config): Promise<BackupEntry[]> {
 export async function createBackupToS3(dbPath: string, s3: S3Config): Promise<string> {
   const ts = new Date().toISOString().replace(/[:.]/g, "-");
   const nano = process.hrtime.bigint().toString().slice(-6);
-  const name = `${basename(dbPath)}.${ts}-${nano}.bak`;
+  const name = `${stripBackupSuffix(basename(dbPath))}.${ts}-${nano}.bak`;
   const tempPath = join(tmpdir(), name);
   cpSync(dbPath, tempPath);
   try {
