@@ -166,6 +166,7 @@ export function storageListRows(
         : `${basePath}/storage/${encodeURIComponent(b.name)}/download`;
 
     const vtGroup = `vt-${i}-${b.name.replace(/[^a-zA-Z0-9]/g, "-")}`;
+    const id = 'id' + Math.random()
 
     const mountItem = isActive
       ? html`<span
@@ -215,7 +216,8 @@ export function storageListRows(
       <td class="backup-actions-cell">
         <details
           class="dropdown"
-          data-on:click__window="if(!evt.target.closest('.dropdown'))evt.target.open=false"
+          data-ref="${id}"
+          data-on:click__outside="$${id}.open=false"
         >
           <summary>${iconMenu(14)}</summary>
           <div class="dropdown-panel">

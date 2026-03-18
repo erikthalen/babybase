@@ -124,6 +124,7 @@ export function shell(active: string, content: string): string {
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-markup.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-javascript.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js" defer></script>
+  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.8/bundles/datastar.js"></script>
   <style>${css}</style>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

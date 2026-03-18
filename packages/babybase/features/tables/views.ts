@@ -182,7 +182,9 @@ export function buildTabBar(tables: string[], table: string, basePath: string) {
     <div class="table-tabs-wrap">
       <nav class="table-tabs">${links}</nav>
     </div>
-    <script>${raw(tableTabsScript)}</script>
+    <script>
+      ${raw(tableTabsScript)};
+    </script>
   </div>`;
 }
 
@@ -418,9 +420,12 @@ export function buildRowsContainer(opts: {
           </span>`
       : `Columns`;
 
+  const id = "id" + Math.random();
+
   const colSelector = html`<details
     class="dropdown"
-    data-on:click__window="if(evt.target.closest('.dropdown'))evt.target.open=false"
+    data-ref="${id}"
+    data-on:click__outside="$${id}.open=false"
   >
     <summary>${colSelectorLabel}</summary>
     <div class="dropdown-panel">${colSelectorItems}</div>
