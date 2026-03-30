@@ -40,14 +40,10 @@ const diagramStyles = css`
     width: 100vw;
     gap: 6px;
   }
-  .button-group {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  }
   #diagram-viewport {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: var(--pb-diagram-bg);
   }
   #canvas-wrap {
     transform-origin: 0 0;
@@ -86,12 +82,12 @@ export function erDiagramView(
       <div data-signals="{_tableName: ''}" class="er-diagram">
         <div class="er-diagram-body">
           <div class="er-diagram-controls">
-            <div
-              class="button-group"
+            <fieldset
+              role="group"
               style="view-transition-name: button-group-1;"
             >
               ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
-            </div>
+            </fieldset>
 
             ${schemaActions(base, 0)}
           </div>
@@ -176,34 +172,33 @@ export function erDiagramView(
     <div data-signals="{_tableName: ''}" class="er-diagram">
       <div class="er-diagram-body">
         <div class="er-diagram-controls">
-          <div
-            class="button-group"
-            style="view-transition-name: button-group-1;"
-          >
+          <fieldset role="group" style="view-transition-name: button-group-1;">
             ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
-          </div>
+          </fieldset>
+
           ${!readonly
-            ? html`<div
-                class="button-group"
-                style="view-transition-name: button-group-2;"
-              >
-                ${createTableDialog(base)}
-              </div>`
+            ? html`
+                <fieldset
+                  role="group"
+                  style="view-transition-name: button-group-2;"
+                >
+                  ${createTableDialog(base)}
+                </fieldset>
+              `
             : ""}
-          <div
-            class="button-group"
-            style="view-transition-name: button-group-3;"
-          >
-            ${zoomControls()}
-          </div>
-          <div
-            class="button-group"
-            style="view-transition-name: button-group-4;"
-          >
-            <button id="reset-view" class="zoom-btn" data-tooltip="Reset view">
-              ${iconCrosshair(14)}
+
+          ${zoomControls()}
+
+          <fieldset role="group" style="view-transition-name: button-group-4;">
+            <button
+              id="reset-view"
+              data-tooltip="Reset view"
+              data-placement="bottom"
+              class="ghost square"
+            >
+              ${iconCrosshair(16)}
             </button>
-          </div>
+          </fieldset>
 
           ${schemaActions(base, readonly ? 0 : pendingCount)}
         </div>

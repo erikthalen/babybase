@@ -1,18 +1,6 @@
 import { css } from "../../tag.ts";
 
 export const badgeCss = css`
-.badge {
-  display: inline-block;
-  padding: 0.12rem 0.5rem;
-  border-radius: 10px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  background: var(--pb-badge-bg, #a1a1aa);
-  color: var(--pb-badge-fg, #27272a);
-  user-select: none;
-}
 .badge.pk {
   background: var(--pb-badge-pk-bg, #faa087);
   color: var(--pb-badge-pk-fg, #522a09);

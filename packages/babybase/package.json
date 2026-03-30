@@ -22,12 +22,16 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.0.0",
-    "@babybase/ui": "workspace:*",
-    "@hono/node-server": "catalog:",
-    "hono": "catalog:"
+    "@babybase/ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "@hono/node-server": "^1.0.0",
+    "hono": "^4.0.0"
   },
   "devDependencies": {
+    "@hono/node-server": "catalog:",
     "@types/node": "catalog:",
+    "hono": "catalog:",
     "typescript": "catalog:"
   }
 }

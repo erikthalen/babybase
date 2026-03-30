@@ -5,16 +5,33 @@
     },
     "chinook.db": {
       "camera": {
-        "x": 16.662863149596156,
-        "y": 3.470914205108535,
-        "z": 0.7729554820673584
+        "x": -136.10613317804632,
+        "y": 77.5103526526974,
+        "z": 0.804307226954169
       },
       "tablePositions": {
         "invoice_items": {
           "x": 370,
           "y": 692
+        },
+        "invoices": {
+          "x": 704.052,
+          "y": 703.459
+        },
+        "employees": {
+          "x": 1082.04,
+          "y": 41.4067
+        },
+        "artists": {
+          "x": 405.248,
+          "y": 116.061
+        },
+        "customers": {
+          "x": 710,
+          "y": 60
         }
-      }
+      },
+      "hiddenColumns": {}
     },
     "chinook.db.2026-03-15T12-02-59-539Z-129666.bak": {
       "database": "chinook.db"
@@ -36,7 +53,10 @@
     },
     "chinook.db.2026-03-17T19-18-26-998Z-175875.bak": {
       "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+    },
+    "chinook.db.2026-03-30T21-18-12-257Z-769541.bak": {
+      "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
     }
   },
-  "activeDatabase": "./chinook.db"
+  "activeDatabase": ".babybase/mounts/chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
 }

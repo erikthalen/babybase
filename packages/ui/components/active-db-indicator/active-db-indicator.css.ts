@@ -2,12 +2,7 @@ import { css } from "../../tag.ts";
 
 export const activeDbIndicatorCss = css`
   .active-db-indicator {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    color: var(--pb-text-muted, #a1a1aa);
+    color: var(--jazz-neutral-400);
     view-transition-name: active-db-indicator;
   }
   .active-db-dot {

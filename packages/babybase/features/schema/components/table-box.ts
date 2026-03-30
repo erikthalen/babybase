@@ -8,17 +8,16 @@ export const tableBoxStyles = css`
   .table-box {
     user-select: none;
     position: absolute;
-    border: 1px solid var(--pb-border);
     border-radius: 8px;
+    border: 1px solid var(--jazz-neutral-300);
     overflow: visible;
-    background: var(--pb-surface);
   }
   .table-box-header {
     display: flex;
     align-items: center;
     position: relative;
-    background: var(--pb-diagram-header);
-    border-bottom: 1px solid var(--pb-border);
+    background: var(--jazz-neutral-0);
+    border-bottom: 1px solid var(--jazz-neutral-300);
     border-radius: 8px 8px 0 0;
   }
   .table-box-rows {
@@ -41,7 +40,7 @@ export const tableBoxStyles = css`
   .table-box-title {
     font-size: 12px;
     font-weight: 500;
-    color: var(--pb-diagram-title);
+
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -104,7 +103,6 @@ export const tableBoxStyles = css`
   }
   .table-box-col-name {
     font-size: 11px;
-    color: var(--pb-text-heading);
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -144,7 +142,7 @@ export function tableBox(
           (!isNew && t.foreignKeys.some((f) => f.from === c.originalName))
             ? "⤷ "
             : "";
-        const bg = ci % 2 === 1 ? "var(--pb-diagram-row-alt)" : "var(--pb-bg)";
+        const bg = ci % 2 === 1 ? "var(--jazz-neutral-0)" : "var(--jazz-neutral-50)";
         const extraClass = isNew ? " table-box-row--pending-new" : "";
         return html`<div
           class="table-box-row${extraClass}"
@@ -159,16 +157,16 @@ export function tableBox(
       })
     : t.columns.map((c, ci) => {
         const fk = t.foreignKeys.some((f) => f.from === c.name) ? "⤷ " : "";
-        const bg = ci % 2 === 1 ? "var(--pb-diagram-row-alt)" : "var(--pb-bg)";
+        const bg = ci % 2 === 1 ? "var(--jazz-neutral-0)" : "var(--jazz-neutral-50)";
         return html`<div
           class="table-box-row"
           style="height:${ROW_H}px;background:${bg}"
         >
           ${c.pk ? pkSvg : ""}
           <span class="table-box-col-name"
-            >${fk}${c.name}${
-              c.dflt_value != null ? ` = ${String(c.dflt_value)}` : ""
-            }</span
+            >${fk}${c.name}${c.dflt_value != null
+              ? ` = ${String(c.dflt_value)}`
+              : ""}</span
           >
           <span class="table-box-col-type">${c.type || "ANY"}</span>
         </div>`;
@@ -190,24 +188,26 @@ export function tableBox(
   >
     <div class="table-box-header" style="height:${BOX_HEADER_H}px">
       <div data-header="true" class="table-box-header-inner">
-        ${iconTable(13, "var(--pb-diagram-title)")}
+        ${iconTable(13)}
         <span class="table-box-title"> ${t.name} </span>
         <a
           href="${base}/tables/${t.name}"
           data-tooltip="Browse table"
-          class="table-box-link-btn"
+          class="button ghost square"
         >
           <!-- data-on:click="@get('${base}/tables/${t.name}')" -->
           ${iconLink(12)}
         </a>
-        ${!readonly ? html`<button
-          type="button"
-          data-tooltip="Edit table"
-          data-on:click="$_editTableDialog.showModal(); @get('${base}/schema/tables/${t.name}/edit-dialog')"
-          class="table-box-edit-btn"
-        >
-          ${iconPencil(12)}
-        </button>` : ""}
+        ${!readonly
+          ? html`<button
+              type="button"
+              data-tooltip="Edit table"
+              data-on:click="$_editTableDialog.showModal(); @get('${base}/schema/tables/${t.name}/edit-dialog')"
+              class="ghost square"
+            >
+              ${iconPencil(12)}
+            </button>`
+          : ""}
         ${pendingDot}
       </div>
     </div>

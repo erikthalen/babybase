@@ -3,16 +3,15 @@ import { iconTablePlus } from "@babybase/ui";
 
 export function createTableDialog(base: string) {
   return html`
-    <style>
-      ${styles}
-    </style>
-
     <button
       class="create-table-button"
       data-on:click="$_editTableDialog.showModal(); @get('${base}/schema/new-table-dialog')"
     >
-      ${iconTablePlus(12)}
-      New Table
+      <style>
+        ${styles}
+      </style>
+      
+      ${iconTablePlus(12)} New Table
     </button>
   `;
 }
@@ -20,10 +19,6 @@ export function createTableDialog(base: string) {
 const css = String.raw;
 
 const styles = css`
-  .create-table-button {
-    background: var(--pb-bg);
-  }
-
   .create-table-dialog {
     left: 50%;
     top: 50%;

@@ -45,18 +45,14 @@ const css = String.raw;
 
 const shellStyles = css`
   #edit-table-dialog {
-    background: var(--pb-surface);
-    border: 1px solid var(--pb-border);
-    padding: 0;
-    color: var(--pb-text);
     width: min(90vw, 680px);
     height: 100vh;
     overflow: auto;
-    position: fixed;
     top: 0;
     right: 0;
     left: auto;
     max-height: none;
+    border-radius: 0;
   }
 `;
 
@@ -75,8 +71,7 @@ const contentStyles = css`
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--pb-border);
-    background: var(--pb-th-bg);
+    background: var(--jazz-neutral-100);
   }
   .etd-header-title {
     display: flex;
@@ -87,10 +82,8 @@ const contentStyles = css`
     font-weight: 600;
   }
   .etd-header-badge {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--pb-text-faint);
-    border: 1px solid var(--pb-border);
+    color: var(--jazz-neutral-600);
+    border: 1px solid var(--jazz-neutral-400);
     border-radius: 6px;
     padding: 0.15rem 0.5rem;
   }
@@ -115,14 +108,6 @@ const contentStyles = css`
     width: 100%;
     box-sizing: border-box;
   }
-  .etd-close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    color: var(--pb-text-faint);
-    line-height: 1;
-  }
   .etd-col-grid {
     display: grid;
     grid-template-columns: 2fr 1.5fr 1.5fr 2fr auto 28px;
@@ -137,11 +122,11 @@ const contentStyles = css`
     padding: 0.625rem 1rem;
     font-size: 0.6875rem;
     font-weight: 500;
-    color: var(--pb-text-muted);
+    color: var(--jazz-neutral-400);
     letter-spacing: 0.06em;
-    background: var(--pb-th-bg);
-    border-top: 1px solid var(--pb-border);
-    border-bottom: 1px solid var(--pb-border);
+    background: var(--jazz-neutral-100);
+    border-top: 1px solid var(--jazz-neutral-300);
+    border-bottom: 1px solid var(--jazz-neutral-300);
     align-items: center;
   }
   .etd-footer {
@@ -183,7 +168,6 @@ const contentStyles = css`
   .col-fkref {
     flex: 2;
     min-width: 0;
-    font-size: 11px;
   }
   .col-pk-spacer {
     flex: 2;
@@ -196,15 +180,7 @@ const contentStyles = css`
     display: inline-block;
     width: 28px;
   }
-  .edit-col-row-delete {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 2px 6px;
-    color: var(--pb-text-faint);
-    font-size: 1.1rem;
-    flex-shrink: 0;
-  }
+
   .col-deleted {
     opacity: 0.35;
     text-decoration: line-through;
@@ -269,9 +245,9 @@ function colRow(
         class="edit-col-row edit-col-row--pk"
         title="Primary key columns cannot be edited"
       >
-        <input value="${col.name}" disabled class="col-name" />
-        <input value="${col.type}" disabled class="col-type" />
-        <input value="" disabled placeholder="—" class="col-default" />
+        <input value="${col.name}" disabled class="col-name" type="text" />
+        <input value="${col.type}" disabled class="col-type" type="text" />
+        <input value="" disabled placeholder="—" class="col-default" type="text" />
         <span class="col-pk-spacer"></span>
         <input type="checkbox" checked disabled />
         <span class="col-delete-placeholder"></span>
@@ -307,7 +283,12 @@ function colRow(
       class="edit-col-row"
       data-class="{'col-deleted': $editcol_${i}_deleted}"
     >
-      <input data-bind:editcol_${i}_name value="${col.name}" class="col-name" />
+      <input
+        data-bind:editcol_${i}_name
+        value="${col.name}"
+        class="col-name"
+        type="text"
+      />
       <select data-bind:editcol_${i}_type class="col-type">
         ${SQLITE_TYPES.map(
           (t) =>
@@ -322,6 +303,7 @@ function colRow(
         value="${col.dflt_value}"
         placeholder="NULL"
         class="col-default"
+        type="text"
       />
       ${fkSelect}
       <input
@@ -333,7 +315,7 @@ function colRow(
         type="button"
         title="Remove column"
         data-on:click="$editcol_${i}_deleted = !$editcol_${i}_deleted"
-        class="edit-col-row-delete"
+        class="square destructive ghost"
       >
         ${iconX(16)}
       </button>
@@ -397,7 +379,7 @@ export function editTableDialogContent(
       <button
         type="button"
         data-on:click="$_editTableDialog.close()"
-        class="etd-close-btn"
+        class="ghost square"
       >
         ${iconX(16)}
       </button>
@@ -411,6 +393,7 @@ export function editTableDialogContent(
           data-bind:editTableName
           value="${tableName}"
           class="etd-field-input"
+          type="text"
         />
       </div>
     </div>
@@ -435,12 +418,13 @@ export function editTableDialogContent(
     <div class="etd-footer">
       <button
         type="button"
+        class="outline"
         data-on:click="@get('${base}/schema/tables/${tableName}/new-column-row?idx=' + $editColCount)"
       >
         + Add column
       </button>
       <div class="etd-footer-actions">
-        <button type="button" data-on:click="$_editTableDialog.close()">
+        <button type="button" class="ghost" data-on:click="$_editTableDialog.close()">
           Cancel
         </button>
         <button
@@ -486,6 +470,7 @@ export function newEmptyColRow(
         data-bind:editcol_${i}_name
         placeholder="column_name"
         class="col-name"
+        type="text"
       />
       <select data-bind:editcol_${i}_type class="col-type">
         ${SQLITE_TYPES.map((t) => html`<option value="${t}">${t}</option>`)}
@@ -495,6 +480,7 @@ export function newEmptyColRow(
         data-bind:editcol_${i}_default
         placeholder="NULL"
         class="col-default"
+        type="text"
       />
       ${fkSelect}
       <input type="checkbox" data-bind:editcol_${i}_notnull />
@@ -502,7 +488,7 @@ export function newEmptyColRow(
         type="button"
         title="Remove column"
         data-on:click="$editcol_${i}_deleted = !$editcol_${i}_deleted"
-        class="edit-col-row-delete"
+        class="destructive ghost square"
       >
         ${iconX(16)}
       </button>
@@ -525,12 +511,13 @@ export function newTableDialogContent(base: string) {
           placeholder="table_name"
           class="etd-table-name-input"
           autofocus
+          type="text"
         />
       </h2>
       <button
         type="button"
         data-on:click="$_editTableDialog.close()"
-        class="etd-close-btn"
+        class="ghost square"
       >
         ${iconX(16)}
       </button>
@@ -556,17 +543,17 @@ export function newTableDialogContent(base: string) {
     <div class="etd-footer">
       <button
         type="button"
+        class="outline"
         data-on:click="@get('${base}/schema/tables/new-col-row?idx=' + $editColCount)"
       >
         + Add column
       </button>
       <div class="etd-footer-actions">
-        <button type="button" data-on:click="$_editTableDialog.close()">
+        <button class="ghost" type="button" data-on:click="$_editTableDialog.close()">
           Cancel
         </button>
         <button
           type="button"
-          class="primary"
           data-on:click="@post('${base}/schema/tables/new'); $_editTableDialog.close()"
         >
           Create table

@@ -18,19 +18,33 @@ import type { Column } from "./queries.ts";
 const css = String.raw;
 
 const rowsStyles = css`
+  .table-tabs-bar {
+    display: inline-grid;
+    gap: 0.5rem;
+    grid-template-columns: auto 1fr;
+    position: sticky;
+    top: 3rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    margin-top: 3rem;
+  }
+
+  .table-tabs {
+    width: 100%;
+    overflow: auto;
+    background: var(--background-color);
+  }
+
   .rows-wrapper {
     display: contents;
   }
   .rows-container {
-    padding: 4.5rem 1.5rem 6rem;
+    padding: 12px 1.5rem 6rem;
     max-width: 1200px;
     margin-inline: auto;
     width: 100%;
   }
   .rows-card {
-    background: var(--pb-surface);
-    border: 1px solid var(--pb-border);
-    border-radius: 12px;
     overflow: hidden;
   }
   .rows-table-wrap {
@@ -49,10 +63,8 @@ const rowsStyles = css`
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
-    color: var(--pb-primary);
   }
   th.sortable:hover {
-    color: var(--pb-text-heading);
   }
   th.sortable:hover .sort-icon {
     opacity: 0.75;
@@ -69,7 +81,7 @@ const rowsStyles = css`
   }
   .rows-toolbar {
     position: sticky;
-    top: calc(1rem + 50px);
+    top: calc(4rem + 30px);
     z-index: 50;
     display: flex;
     align-items: center;
@@ -77,31 +89,12 @@ const rowsStyles = css`
     gap: 0.5rem;
     padding: 0.5rem 0;
     margin-bottom: 0.75rem;
+
+    label {
+      background-color: var(--background-color);
+    }
   }
-  .search-input-wrap {
-    position: relative;
-    flex: 1;
-    max-width: 400px;
-    background: var(--pb-bg);
-    border-radius: 6px;
-  }
-  .rows-toolbar input[type="search"] {
-    width: 100%;
-    font-size: 0.9rem;
-    padding: 0.45rem 5rem 0.45rem 0.75rem;
-  }
-  .search-kbd-hint {
-    position: absolute;
-    right: 0.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: var(--pb-text-muted);
-    font-size: 0.75rem;
-    pointer-events: none;
-  }
+  
   .col-selector-count {
     color: var(--pb-accent);
   }
@@ -161,6 +154,7 @@ export function buildTabBar(tables: string[], table: string, basePath: string) {
   const links = tables.map(
     (t) =>
       html`<a
+        class="button ghost"
         href="${base}/tables/${t}"
         data-on:click__prevent="history.pushState(null,'','${base}/tables/${t}');@get('${base}/tables/${t}')"
         ${raw(t === table ? ' class="active"' : "")}
@@ -169,19 +163,21 @@ export function buildTabBar(tables: string[], table: string, basePath: string) {
       </a>`,
   );
   return html`<div class="table-tabs-bar">
-    <div class="button-group">
-      <a
-        href="${base}/schema"
-        data-on:click="@get('${base}/schema')"
-        data-tooltip="Back to schemas"
-        aria-label="Schema"
-      >
-        ${iconArrowLeft(14)}
-      </a>
-    </div>
-    <div class="table-tabs-wrap">
-      <nav class="table-tabs">${links}</nav>
-    </div>
+    <a
+      class="button square ghost"
+      href="${base}/schema"
+      data-on:click="@get('${base}/schema')"
+      data-tooltip="Back to schemas"
+      data-placement="bottom"
+      aria-label="Schema"
+    >
+      ${iconArrowLeft(16)}
+    </a>
+
+    <nav class="table-tabs">
+      <fieldset role="group">${links}</fieldset>
+    </nav>
+
     <script>
       ${raw(tableTabsScript)};
     </script>
@@ -290,7 +286,7 @@ export function buildRowsContainer(opts: {
       ${cells}
       <td>
         <button
-          class="danger"
+          class="ghost destructive"
           data-on:click="@delete('${basePath}/tables/${table}/${rowid}')"
         >
           Delete
@@ -325,8 +321,11 @@ export function buildRowsContainer(opts: {
     item === "..."
       ? html`<span class="pagination-dots">···</span>`
       : item === page
-        ? html`<button class="pagination-btn active">${item}</button>`
-        : html`<button class="pagination-btn" data-on:click="${pageUrl(item)}">
+        ? html`<button class="pagination-btn">${item}</button>`
+        : html`<button
+            class="pagination-btn ghost"
+            data-on:click="${pageUrl(item)}"
+          >
             ${item}
           </button>`,
   );
@@ -336,23 +335,23 @@ export function buildRowsContainer(opts: {
       ? html`<nav class="pagination">
           ${page > 1
             ? html`<button
-                class="pagination-btn"
+                class="pagination-btn ghost"
                 data-on:click="${pageUrl(page - 1)}"
               >
                 &#8249; Previous
               </button>`
-            : html`<button class="pagination-btn" disabled>
+            : html`<button class="pagination-btn ghost" disabled>
                 &#8249; Previous
               </button>`}
           <span class="pagination-buttons">${pageButtons}</span>
           ${page < totalPages
             ? html`<button
-                class="pagination-btn"
+                class="pagination-btn ghost"
                 data-on:click="${pageUrl(page + 1)}"
               >
                 Next &#8250;
               </button>`
-            : html`<button class="pagination-btn" disabled>
+            : html`<button class="pagination-btn ghost" disabled>
                 Next &#8250;
               </button>`}
         </nav>`
@@ -372,7 +371,12 @@ export function buildRowsContainer(opts: {
       const required = c.notnull && !hasDefault ? " required" : "";
 
       return html`<td>
-        <input data-bind:${c.name} placeholder="${placeholder}" ${required} />
+        <input
+          data-bind:${c.name}
+          placeholder="${placeholder}"
+          ${required}
+          type="text"
+        />
       </td>`;
     });
 
@@ -382,7 +386,6 @@ export function buildRowsContainer(opts: {
           ${insertCells}
           <td>
             <button
-              class="primary"
               data-on:click="@post('${basePath}/tables/${table}')${resetSignals
                 ? `;${resetSignals}`
                 : ""}"
@@ -401,14 +404,18 @@ export function buildRowsContainer(opts: {
   const colSelectorItems = columns.map((col) => {
     const isVisible = !hiddenColumns.includes(col.name);
     const encodedCol = encodeURIComponent(col.name);
-    return html`<label class="dropdown-item">
-      <input
-        type="checkbox"
-        ${isVisible ? " checked" : ""}
-        data-on:click="@post('${toggleBase}/${encodedCol}${toggleQuerySuffix}')"
-      />
-      ${html`${col.name}`}</label
-    >`;
+
+    return html` <li>
+      <label>
+        <input
+          type="checkbox"
+          value="size"
+          ${isVisible ? " checked" : ""}
+          data-on:click="@post('${toggleBase}/${encodedCol}${toggleQuerySuffix}')"
+        />
+        ${col.name}
+      </label>
+    </li>`;
   });
 
   const hiddenCount = hiddenColumns.length;
@@ -420,31 +427,66 @@ export function buildRowsContainer(opts: {
           </span>`
       : `Columns`;
 
-  const id = "id" + Math.random();
+  // const colSelector = html`<details
+  //   class="dropdown"
+  //   data-ref="${id}"
+  //   data-on:click__outside="$${id}.open=false"
+  // >
+  //   <summary>${colSelectorLabel}</summary>
+  //   <div class="dropdown-panel">${colSelectorItems}</div>
+  // </details>`;
 
-  const colSelector = html`<details
-    class="dropdown"
-    data-ref="${id}"
-    data-on:click__outside="$${id}.open=false"
-  >
-    <summary>${colSelectorLabel}</summary>
-    <div class="dropdown-panel">${colSelectorItems}</div>
-  </details>`;
+  const colSelector = html`<button popovertarget="column_selector">
+      ${colSelectorLabel}
+    </button>
+
+    <div id="column_selector" popover>
+      <menu>
+        ${colSelectorItems}
+        <!-- <li><button class="ghost">Edit</button></li>
+        <li><button class="ghost">Duplicate</button></li>
+        <li><button class="ghost">Share</button></li>
+        <li><button class="ghost">Archive</button></li> -->
+      </menu>
+    </div>`;
 
   const searchInput = html`<div
     class="rows-toolbar"
     data-on:keydown__window="if(evt.metaKey&&evt.key==='f'){evt.preventDefault();document.getElementById('search-input').focus()}"
   >
-    <div class="search-input-wrap">
+    <label>
+      <svg
+        data-prefix
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+        <path d="M21 21l-6 -6" />
+      </svg>
+
       <input
         id="search-input"
         type="search"
         data-bind:search
         placeholder="Search all columns…"
         data-on:input__debounce_300ms="history.replaceState(null,'','${baseSearchUrl}' + ($search ? '&search=' + encodeURIComponent($search) : '')); @get('${baseSearchUrl}&search=' + encodeURIComponent($search))"
+        type="search"
+      />
+      <kbd data-suffix>⌘K</kbd>
+    </label>
+    <!-- <div class="search-input-wrap">
+      <input
+        
       />
       <span class="search-kbd-hint"><kbd>⌘</kbd><kbd>F</kbd> </span>
-    </div>
+    </div> -->
     ${colSelector}
   </div>`;
 
@@ -452,7 +494,7 @@ export function buildRowsContainer(opts: {
     ${searchInput}
     <div class="rows-card">
       <div class="rows-table-wrap">
-        <table>
+        <table style="--cols: repeat(${headers.length + 1}, 1fr)">
           <thead>
             <tr>
               ${headers}

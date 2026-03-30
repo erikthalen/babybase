@@ -7,7 +7,8 @@ import type { DatabaseSync } from "node:sqlite";
 type AppEnv = { Variables: { db: DatabaseSync | null } };
 
 const { app: babybase, getDb } = defineBabybase({
-  database: "./chinook.db",
+  database: "./test.db",
+  basePath: "/baby",
   storage: {
     endpoint: process.env.S3_ENDPOINT!,
     bucket: process.env.S3_BUCKET!,
@@ -62,7 +63,7 @@ app.get("/artists", (c) => {
   );
 });
 
-app.route("/", babybase);
+app.route("/baby", babybase);
 
 serve({ fetch: app.fetch, port: 3002 }, () => {
   console.log("Babybase dev server: http://localhost:3002");

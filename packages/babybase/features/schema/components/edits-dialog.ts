@@ -5,17 +5,13 @@ const css = String.raw;
 
 const shellStyles = css`
   #edits-dialog {
-    background: var(--pb-surface);
-    border: 1px solid var(--pb-border);
-    padding: 0;
-    color: var(--pb-text);
-    width: min(90vw, 640px);
     max-height: 100vh;
     height: 100vh;
     overflow: auto;
     right: 0%;
     left: auto;
     top: 0%;
+    border-radius: 0;
   }
 `;
 
@@ -23,35 +19,19 @@ const contentStyles = css`
   #edits-dialog-body {
     display: flex;
     flex-direction: column;
+    
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+    }
   }
-  .edits-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--pb-border);
-    position: sticky;
-    top: 0;
-    background: var(--pb-surface);
-    z-index: 1;
-  }
-  .edits-header h2 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .edits-close-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.2rem;
-    color: var(--pb-text-faint);
-    line-height: 1;
-  }
+
   .edits-entry {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--pb-border);
+    border-bottom: 1px solid var(--jazz-neutral-200);
   }
+
   .edits-entry-header {
     display: flex;
     align-items: center;
@@ -99,42 +79,47 @@ export function editsDialogContent(
     <style>
       ${contentStyles}
     </style>
-    <div class="edits-header">
-      <h2>Pending Changes</h2>
-      <button
-        type="button"
-        class="edits-close-btn"
-        data-on:click="$_editsDialog.close()"
-      >
-        ${iconX(16)}
-      </button>
-    </div>
-    ${entries.length === 0
-      ? html`<p
-          class="empty-state-body"
-          style="padding:2rem;text-align:center;"
+
+    <article>
+      <header>
+        <h2>Pending Changes</h2>
+        <button
+          type="button"
+          class="ghost square"
+          data-on:click="$_editsDialog.close()"
         >
-          No pending changes.
-        </p>`
-      : entries.map(
-          (e) => html`
-            <div class="edits-entry">
-              <div class="edits-entry-header">
-                <span class="edits-entry-table">${e.tableName}</span>
-                <button
-                  type="button"
-                  class="danger"
-                  data-on:click="@delete('${base}/schema/tables/${e.tableName}/pending')"
-                >
-                  Remove
-                </button>
-              </div>
-              <pre class="edits-sql">
+          ${iconX(16)}
+        </button>
+      </header>
+
+      <div>
+        ${entries.length === 0
+          ? html`<p
+              class="empty-state-body"
+              style="padding:2rem;text-align:center;"
+            >
+              No pending changes.
+            </p>`
+          : entries.map(
+              (e) =>
+                html` <div class="edits-entry">
+                  <div class="edits-entry-header">
+                    <span class="edits-entry-table">${e.tableName}</span>
+                    <button
+                      type="button"
+                      class="destructive"
+                      data-on:click="@delete('${base}/schema/tables/${e.tableName}/pending')"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                  <pre class="edits-sql">
 ${highlightSql(e.sql || "-- no changes detected")}</pre
-              >
-            </div>
-          `,
-        )}
+                  >
+                </div>`,
+            )}
+      </div>
+    </article>
   `;
 }
 
@@ -143,8 +128,9 @@ export function schemaActions(base: string, pendingCount: number) {
   if (pendingCount === 0) {
     return html`<span id="schema-actions" style="display:none"></span>`;
   }
-  return html`<div id="schema-actions" class="button-group">
+  return html` <fieldset role="group" id="schema-actions">
     <button
+      class="ghost"
       data-on:click="$_editsDialog.showModal(); @get('${base}/schema/edits-dialog')"
     >
       Edits (${pendingCount})
@@ -152,5 +138,5 @@ export function schemaActions(base: string, pendingCount: number) {
     <button class="primary" data-on:click="@post('${base}/schema/publish')">
       Publish (${pendingCount})
     </button>
-  </div>`;
+  </fieldset>`;
 }
