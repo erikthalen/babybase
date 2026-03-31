@@ -5,8 +5,8 @@
     },
     "chinook.db": {
       "camera": {
-        "x": 0,
-        "y": 0,
+        "x": 49,
+        "y": -130,
         "z": 1
       },
       "tablePositions": {
@@ -55,6 +55,12 @@
       "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
     },
     "chinook.db.2026-03-30T21-18-12-257Z-769541.bak": {
+      "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+    },
+    "chinook.db.2026-03-31T21-39-15-167Z-787416.bak": {
+      "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+    },
+    "chinook.db.2026-03-31T21-39-15-971Z-756500.bak": {
       "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
     }
   },
