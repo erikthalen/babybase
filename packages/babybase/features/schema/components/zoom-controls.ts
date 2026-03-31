@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-import { iconMinus, iconPlus } from "@babybase/ui";
+import { iconMinus, iconPlus } from "../../../components/icons.ts";
 
 export function zoomControls() {
   return html`
@@ -17,7 +17,7 @@ export function zoomControls() {
       }
     }
   </style>
-    <fieldset role="group" id="zoom-controls" style="view-transition-name: button-group-3;">
+    <fieldset role="group" id="zoom-controls">
       <button
         class="ghost square"
         id="zoom-out"

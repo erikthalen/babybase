@@ -7,8 +7,8 @@ import {
   iconMenu,
   iconUpload,
   iconX,
-  uploadZoneScript,
-} from "@babybase/ui";
+} from "../../components/icons.ts";
+import { uploadZoneScript } from "../../components/scripts.ts";
 import type { BackupEntry } from "./queries.ts";
 
 const css = String.raw;
@@ -42,10 +42,7 @@ const styles = css`
   .storage-controls .button-group {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
-  .storage-controls .button-group:last-child {
-    view-transition-name: storage-controls-actions;
-  }
-  .storage-dropzone-card {
+.storage-dropzone-card {
     background: var(--pb-surface);
     border: 1px solid var(--pb-border);
     border-radius: 12px;
@@ -118,8 +115,7 @@ export function storageListRows(
     const activeBadge = isActive
       ? html`<span
           class="badge active"
-          style="view-transition-name: active-badge"
-        >
+                 >
           active
         </span>`
       : "";
@@ -142,7 +138,7 @@ export function storageListRows(
     const mountItem = isActive
       ? html`<span
           class="button ghost"
-          style="opacity:0.4;view-transition-name:${vtGroup}"
+          style="opacity:0.4;"
         >
           ${iconCheck(14)} Mounted
         </span>`
@@ -228,7 +224,7 @@ export function storageView(opts: {
     document
       .getElementById("upload-zone")
       .addEventListener("upload-zone:success", function () {
-        <!-- window.location.reload(); -->
+        window.location.reload();
       });
     document
       .getElementById("upload-zone")
@@ -351,14 +347,13 @@ export function storageView(opts: {
       ${raw(styles)}
     </style>
     <div class="storage-controls">
-      <fieldset role="group" style="view-transition-name: button-group-1;">
+      <fieldset role="group">
         ${activeDbIndicator(activeDbName, !!activeDatabase)}
       </fieldset>
       ${activeDatabase
         ? html`<fieldset
             role="group"
-            style="view-transition-name: button-group-2;"
-          >
+                     >
             <button class="primary" data-on:click="@post('${base}/storage')">
               Create backup
             </button>

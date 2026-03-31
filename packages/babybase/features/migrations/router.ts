@@ -12,7 +12,7 @@ import {
   runMigration,
   saveMigration,
 } from "./queries.ts";
-import { highlightSql } from "@babybase/ui";
+import { highlightSql } from "../../components/scripts.ts";
 import { migrationsView } from "./views.ts";
 import { html } from "hono/html";
 import { type HtmlEscapedString } from "hono/utils/html";

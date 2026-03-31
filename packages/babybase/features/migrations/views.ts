@@ -1,5 +1,5 @@
 import { html, raw } from "hono/html";
-import { iconFileCode, iconPlus } from "@babybase/ui";
+import { iconFileCode, iconPlus } from "../../components/icons.ts";
 import type { MigrationFile } from "./queries.ts";
 
 const css = String.raw;
@@ -228,15 +228,14 @@ export function migrationsView(opts: {
           ${styles}
         </style>
         ${dialog} ${sqlDialog} ${deleteDialog}
-        <div class="empty-state migrations-empty">
-          <div class="empty-state-icon">${iconFileCode(24)}</div>
-          <h3 class="empty-state-title">No migrations yet</h3>
-          <p class="empty-state-body">
+        <div class="empty migrations-empty">
+          ${iconFileCode(24)}
+          <h3>No migrations yet</h3>
+          <p>
             Create SQL migration files to track and apply schema changes to your
             database.
           </p>
           <button
-            class="primary"
             data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"
           >
             ${iconPlus(12)} New migration
@@ -302,8 +301,7 @@ export function migrationsView(opts: {
         ${hasPending
           ? html`<fieldset
               role="group"
-              style="view-transition-name: button-group-1;"
-            >
+                         >
               <button
                 class="primary"
                 data-on:click="@post('${base}/migrations/run-all')"
@@ -312,7 +310,7 @@ export function migrationsView(opts: {
               </button>
             </fieldset>`
           : ""}
-        <fieldset role="group" style="view-transition-name: button-group-2;">
+        <fieldset role="group">
           <button
             class="ghost"
             data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"

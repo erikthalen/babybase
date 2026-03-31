@@ -1,13 +1,12 @@
 import { html, raw } from "hono/html";
 import {
-  css as uiCss,
   iconNavMigrations,
   iconNavSchema,
   iconNavStorage,
   iconX,
   logoMark,
   logoWordmark,
-} from "@babybase/ui";
+} from "./icons.ts";
 import { type HtmlEscapedString } from "hono/utils/html";
 
 interface LayoutProps {
@@ -39,7 +38,7 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
 
         <link
           rel="stylesheet"
-          href="https://esm.sh/gh/erikthalen/jazz@v0.1.0-beta.18/jazz.css"
+          href="https://esm.sh/gh/erikthalen/jazz@v0.1.0-beta.19/jazz.css"
         />
 
         <script
@@ -47,9 +46,151 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
           src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.0-RC.8/bundles/datastar.js"
         ></script>
         <style>
-          ${raw(uiCss)}
-        </style>
-        <style>
+          /* active-db-indicator */
+          .active-db-indicator {
+            color: var(--jazz-neutral-400);
+          }
+          .active-db-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            flex-shrink: 0;
+          }
+          .active-db-dot--none {
+            background: var(--pb-text-faint, #52525b);
+          }
+          .active-db-name {
+            font-family: var(--pb-monospace, ui-monospace, monospace);
+          }
+
+          /* badge variants (base .badge is Jazz) */
+          .badge.pk      { background: var(--pb-badge-pk-bg, #faa087); color: var(--pb-badge-pk-fg, #522a09); }
+          .badge.fk      { background: var(--pb-badge-fk-bg, #4ade80); color: var(--pb-badge-fk-fg, #052e16); }
+          .badge.upload  { background: var(--pb-badge-pk-bg, #faa087); color: var(--pb-badge-pk-fg, #522a09); }
+          .badge.original { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+          .badge.active  { background: rgba(34, 197, 94, 0.12);  color: #4ade80; }
+          .badge.s3      { background: rgba(56, 189, 248, 0.12);  color: #38bdf8; }
+
+          /* pagination */
+          .pagination {
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            position: sticky;
+            bottom: 0;
+          }
+          .pagination-buttons {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 272px;
+          }
+          .pagination-btn {
+            cursor: pointer;
+            transition: background 0.12s, color 0.12s, border-color 0.12s;
+            white-space: nowrap;
+          }
+          .pagination-btn.active { pointer-events: none; }
+          .pagination-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            color: var(--pb-text-muted, #a1a1aa);
+            font-size: 0.875rem;
+            letter-spacing: 0.1em;
+            user-select: none;
+          }
+
+          /* sql syntax highlight */
+          .sql-keyword { color: var(--pb-syntax-keyword, #4ec9b0); }
+          .sql-string  { color: var(--pb-syntax-string, #9cdcfe); }
+          .sql-comment { color: var(--pb-syntax-comment, #6a9955); font-style: italic; }
+          .sql-number  { color: var(--pb-syntax-number, #b5cea8); }
+
+          /* toast */
+          #toast-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 200;
+            pointer-events: none;
+            display: grid;
+            width: 320px;
+          }
+          @keyframes toast-in {
+            from { opacity: 0; transform: translateY(0.5rem); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .toast {
+            grid-row: 1;
+            grid-column: 1;
+            align-self: start;
+            width: 100%;
+            background: var(--jazz-neutral-0, #111113);
+            border: 1px solid var(--jazz-neutral-200, #27272a);
+            border-radius: 8px;
+            padding: 0.875rem 1rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            pointer-events: none;
+            animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+          }
+          .toast:first-child  { pointer-events: all; z-index: 3; }
+          .toast:nth-child(2) { z-index: 2; transform: translateY(-4px); }
+          .toast:nth-child(3) { z-index: 1; transform: translateY(-8px); }
+          .toast:nth-child(n+4) { z-index: 0; transform: translateY(-12px); opacity: 0; pointer-events: none; }
+          .toast-content { flex: 1; min-width: 0; }
+          .toast-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.2rem; }
+          .toast-body {
+            font-size: 0.8rem;
+            color: var(--jazz-neutral-500, #a1a1aa);
+            line-height: 1.4;
+            white-space: pre-line;
+            word-break: break-all;
+          }
+          .toast-dismiss {
+            flex-shrink: 0;
+            height: 20px;
+            width: 20px;
+            min-width: 20px;
+            padding: 0;
+            border-color: transparent;
+            color: var(--jazz-neutral-400, #52525b);
+            margin-top: 1px;
+            pointer-events: auto;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .toast-dismiss:hover { border-color: transparent; color: var(--jazz-neutral-600, #a1a1aa); }
+          .toast-error { border-color: var(--jazz-destructive-200); }
+          .toast-error .toast-title { color: var(--jazz-destructive-600, #f87171); }
+          #toast-clear-all {
+            display: none;
+            grid-row: 2;
+            grid-column: 1;
+            justify-self: end;
+            margin-top: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--jazz-neutral-800, #a1a1aa);
+            border-color: transparent;
+            padding: 2px 8px;
+            height: auto;
+            pointer-events: all;
+          }
+          #toast-clear-all:hover { border-color: transparent; }
+          #toast-container:has(.toast ~ .toast) #toast-clear-all { display: block; }
+
           :root {
             --pb-sans-serif: system-ui, sans-serif;
             --pb-monospace: system-mono, monospace;
@@ -85,42 +226,6 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             --pb-syntax-number: #b5cea8;
           }
 
-          @view-transition {
-            navigation: auto;
-          }
-
-          /* Create a custom animation */
-          @keyframes move-out {
-            from {
-              transform: translateY(0%);
-            }
-
-            to {
-              opacity: 0;
-              transform: translateY(-0px);
-            }
-          }
-
-          @keyframes move-in {
-            from {
-              opacity: 0;
-              transform: translateY(0px);
-            }
-
-            to {
-              transform: translateY(0%);
-            }
-          }
-
-          /* Apply the custom animation to the old and new page states */
-          ::view-transition-old(root) {
-            animation: 0.15s ease-out both move-out;
-          }
-
-          ::view-transition-new(root) {
-            animation: 0.15s ease-out both move-in;
-          }
-
           body {
             min-height: 100vh;
             user-select: none;
@@ -135,7 +240,6 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            view-transition-name: site-logo;
           }
 
           .floating-nav {
@@ -152,37 +256,6 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
 
           .floating-nav a.active {
             background: var(--jazz-neutral-100);
-          }
-
-          @keyframes nav-link-in {
-            from {
-              opacity: 0;
-              transform: translateX(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateX(0);
-            }
-          }
-          @keyframes nav-link-out {
-            from {
-              opacity: 1;
-              transform: translateX(0);
-            }
-            to {
-              opacity: 0;
-              transform: translateX(20px);
-            }
-          }
-
-          ::view-transition-new(nav-schema),
-          ::view-transition-new(nav-migrations) {
-            animation: nav-link-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-          }
-
-          ::view-transition-old(nav-schema),
-          ::view-transition-old(nav-migrations) {
-            animation: nav-link-out 0.2s ease;
           }
 
           main {
@@ -222,22 +295,6 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
               opacity: 0;
             }
           }
-
-          ::view-transition-old(button-group-1) {
-            animation: fade-out 200ms ease;
-          }
-
-          ::view-transition-new(button-group-1) {
-            animation: fade-in 200ms ease;
-          }
-
-          ::view-transition-old(button-group-1),
-          ::view-transition-new(button-group-1) {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            object-fit: none;
-          }
           }
         </style>
       </head>
@@ -249,6 +306,7 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
         <div id="toast-container">
           <button
             id="toast-clear-all"
+            class="outline"
             onclick="document.querySelectorAll('#toast-container .toast').forEach(t=>t.remove())"
             aria-label="Clear all notifications"
           >
@@ -288,7 +346,6 @@ export function nav({
     return html`<a
       href="${base}${path}"
       class="button ghost ${active ? "active" : ""}"
-      ${vtName ? `style="view-transition-name: ${vtName}"` : ""}
     >
       ${icon} ${label}
     </a>`;
@@ -297,11 +354,7 @@ export function nav({
   return html`
     <div class="site-logo">${logoMark(12)} ${logoWordmark(14)}</div>
 
-    <nav
-      id="floating-nav"
-      class="floating-nav"
-      style="view-transition-name: floating-nav"
-    >
+    <nav id="floating-nav" class="floating-nav">
       <fieldset role="group">
         ${hasDatabase
           ? link("/schema", "Schema", "schema", iconNavSchema())
@@ -333,7 +386,6 @@ export function navElement(props: NavProps) {
     return html`<a
       href="${base}${path}"
       class="button ${active ? "active" : ""}"
-      ${vtName ? ` style="view-transition-name: ${vtName}"` : ""}
     >
       ${icon} ${label}
     </a>`;
@@ -359,7 +411,7 @@ export function navElement(props: NavProps) {
       : "";
   const storageLink = link("/storage", "Storage", "storage", storageIcon);
 
-  return html`<nav id="floating-nav" class="button-group floating-nav">
+  return html`<nav id="floating-nav" class="floating-nav">
     ${schemaLink}${migrationsLink}${storageLink}
   </nav>`;
 }
@@ -376,7 +428,7 @@ export function toastHtml(
       <div class="toast-body">${body}</div>
     </div>
     <button
-      class="toast-dismiss"
+      class="ghost square"
       onclick="this.closest('.toast').remove()"
       aria-label="Dismiss"
     >

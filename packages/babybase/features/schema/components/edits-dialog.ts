@@ -1,5 +1,6 @@
 import { html, raw } from "hono/html";
-import { highlightSql, iconX } from "@babybase/ui";
+import { highlightSql } from "../../../components/scripts.ts";
+import { iconX } from "../../../components/icons.ts";
 
 const css = String.raw;
 
@@ -94,12 +95,9 @@ export function editsDialogContent(
 
       <div>
         ${entries.length === 0
-          ? html`<p
-              class="empty-state-body"
-              style="padding:2rem;text-align:center;"
-            >
-              No pending changes.
-            </p>`
+          ? html`<div class="empty" style="padding:2rem;">
+              <p>No pending changes.</p>
+            </div>`
           : entries.map(
               (e) =>
                 html` <div class="edits-entry">

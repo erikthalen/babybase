@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-import { iconKey, iconLink, iconPencil, iconTable } from "@babybase/ui";
+import { iconKey, iconLink, iconPencil, iconTable } from "../../../components/icons.ts";
 import type { DesiredColumn, TableSchema } from "../queries.ts";
 
 const css = String.raw;

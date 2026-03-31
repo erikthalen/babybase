@@ -20,6 +20,7 @@ import {
   registerBackup,
   s3Key,
   saveUploadedDb,
+  uploadToS3,
   writeSettings,
 } from "./queries.ts";
 import { storageView } from "./views.ts";
@@ -169,16 +170,26 @@ export function createStorageRouter(opts: {
   // Upload an external database file
   app.post("/upload", async (c) => {
     const config = c.get("config");
-    const uploadDir = storageDir ?? settingsDir;
     try {
       const body = await c.req.parseBody();
       const file = body.file;
       if (file instanceof File && file.size > 0) {
         const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
         const data = Buffer.from(await file.arrayBuffer());
-        saveUploadedDb(uploadDir, safe, data);
-        if (!config.database) {
-          mountDb(join(uploadDir, safe));
+        if (s3) {
+          const tempPath = join(settingsDir, safe);
+          saveUploadedDb(settingsDir, safe, data);
+          try {
+            await uploadToS3(tempPath, s3);
+          } finally {
+            try { unlinkSync(tempPath); } catch { /* already gone */ }
+          }
+        } else {
+          const uploadDir = storageDir ?? settingsDir;
+          saveUploadedDb(uploadDir, safe, data);
+          if (!config.database) {
+            mountDb(join(uploadDir, safe));
+          }
         }
       }
     } catch {
@@ -210,7 +221,6 @@ export function createStorageRouter(opts: {
             hasDatabase: false,
             readonly: config.readonly,
           }),
-          { useViewTransition: true },
         );
       }
       await patchElements(
@@ -222,7 +232,6 @@ export function createStorageRouter(opts: {
             s3: !!s3,
           })}
         </main>`,
-        { useViewTransition: true },
       );
     });
   });
@@ -251,7 +260,6 @@ export function createStorageRouter(opts: {
             hasDatabase: false,
             readonly: config.readonly,
           }),
-          { useViewTransition: true },
         );
       }
       await patchElements(
@@ -263,7 +271,6 @@ export function createStorageRouter(opts: {
             s3: !!s3,
           })}
         </main>`,
-        { useViewTransition: true },
       );
     });
   });
@@ -357,7 +364,6 @@ export function createStorageRouter(opts: {
           hasDatabase: true,
           readonly: config.readonly,
         }),
-        { useViewTransition: true },
       );
       await patchElements(
         html`<main id="main">
@@ -368,7 +374,6 @@ export function createStorageRouter(opts: {
             s3: !!s3,
           })}
         </main>`,
-        { useViewTransition: true },
       );
       await patchElements(
         toastHtml(
@@ -408,7 +413,6 @@ export function createStorageRouter(opts: {
             s3: !!s3,
           })}
         </main>`,
-        { useViewTransition: true },
       );
       await patchElements(
         toastHtml(

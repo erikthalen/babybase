@@ -13,7 +13,6 @@ export type PatchElementsOptions = {
     | "before"
     | "after"
     | "remove";
-  useViewTransition?: boolean;
 };
 
 export type SSEStream = {
@@ -31,7 +30,6 @@ function formatPatchElements(
   const lines: string[] = [];
   if (options?.selector) lines.push(`selector ${options.selector}`);
   if (options?.mode) lines.push(`mode ${options.mode}`);
-  if (options?.useViewTransition) lines.push(`useViewTransition true`);
   for (const l of String(html).split("\n")) lines.push(`elements ${l}`);
   return lines.join("\n");
 }

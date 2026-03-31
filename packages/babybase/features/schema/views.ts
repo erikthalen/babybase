@@ -1,5 +1,5 @@
 import { html, raw } from "hono/html";
-import { iconCrosshair, iconPlus, iconTable, iconTableOff } from "@babybase/ui";
+import { iconCrosshair, iconPlus, iconTable, iconTableOff } from "../../components/icons.ts";
 import type { CameraState } from "../storage/queries.ts";
 import { activeDbIndicator } from "../storage/views.ts";
 import { cameraScript } from "./components/camera-script.ts";
@@ -84,8 +84,7 @@ export function erDiagramView(
           <div class="er-diagram-controls">
             <fieldset
               role="group"
-              style="view-transition-name: button-group-1;"
-            >
+                         >
               ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
             </fieldset>
 
@@ -93,15 +92,14 @@ export function erDiagramView(
           </div>
           ${editTableDialogShell()} ${editsDialogShell()}
           <div id="diagram-viewport">
-            <div class="empty-state er-diagram-empty">
-              <div class="empty-state-icon">${iconTableOff(24)}</div>
-              <h3 class="empty-state-title">No tables yet</h3>
-              <p class="empty-state-body">
+            <div class="empty er-diagram-empty">
+              ${iconTableOff(24)}
+              <h3>No tables yet</h3>
+              <p>
                 Create your first table to start building your schema.
               </p>
               ${!readonly
                 ? html`<button
-                    class="primary"
                     data-on:click="$_editTableDialog.showModal(); @get('${base}/schema/new-table-dialog')"
                   >
                     ${iconPlus(12)} New table
@@ -172,7 +170,7 @@ export function erDiagramView(
     <div data-signals="{_tableName: ''}" class="er-diagram">
       <div class="er-diagram-body">
         <div class="er-diagram-controls">
-          <fieldset role="group" style="view-transition-name: button-group-1;">
+          <fieldset role="group">
             ${raw(activeDbIndicator(activeDbName, !!activeDatabase))}
           </fieldset>
 
@@ -180,8 +178,7 @@ export function erDiagramView(
             ? html`
                 <fieldset
                   role="group"
-                  style="view-transition-name: button-group-2;"
-                >
+                                 >
                   ${createTableDialog(base)}
                 </fieldset>
               `
@@ -189,7 +186,7 @@ export function erDiagramView(
 
           ${zoomControls()}
 
-          <fieldset role="group" style="view-transition-name: button-group-4;">
+          <fieldset role="group">
             <button
               id="reset-view"
               data-tooltip="Reset view"

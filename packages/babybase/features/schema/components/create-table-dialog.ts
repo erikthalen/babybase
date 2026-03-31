@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-import { iconTablePlus } from "@babybase/ui";
+import { iconTablePlus } from "../../../components/icons.ts";
 
 export function createTableDialog(base: string) {
   return html`

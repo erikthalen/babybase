@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-import { iconX } from "@babybase/ui";
+import { iconX } from "../../../components/icons.ts";
 import type { Column } from "../../tables/queries.ts";
 import type { DesiredColumn, ForeignKey } from "../queries.ts";
 

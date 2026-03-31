@@ -11,8 +11,8 @@ import {
   iconLetterT,
   iconTableOff,
   iconToggleLeft,
-  tableTabsScript,
-} from "@babybase/ui";
+} from "../../components/icons.ts";
+import { tableTabsScript } from "../../components/scripts.ts";
 import type { Column } from "./queries.ts";
 
 const css = String.raw;
@@ -109,13 +109,13 @@ export function tableListView(tables: string[], basePath: string) {
   const base = basePath.replace(/\/$/, "");
   if (tables.length === 0) {
     return html`<div id="tables-view">
-      <div class="empty-state">
-        <div class="empty-state-icon">${iconTableOff(24)}</div>
-        <h3 class="empty-state-title">No tables yet</h3>
-        <p class="empty-state-body">
+      <div class="empty">
+        ${iconTableOff(24)}
+        <h3>No tables yet</h3>
+        <p>
           Create your first table in the Schema view to start storing data.
         </p>
-        <button class="primary" data-on:click="@get('${base}/schema')">
+        <button data-on:click="@get('${base}/schema')">
           Go to Schema
         </button>
       </div>

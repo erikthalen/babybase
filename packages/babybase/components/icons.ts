@@ -1,4 +1,67 @@
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { raw } from "hono/html";
+
+const _req = createRequire(import.meta.url);
+// Resolve one known icon to locate the outline icons directory
+const _iconsDir = dirname(_req.resolve("@tabler/icons/outline/x.svg"));
+
+function icon(name: string) {
+  const svg = readFileSync(join(_iconsDir, `${name}.svg`), "utf-8");
+  return (size = 16) =>
+    raw(
+      svg
+        .replace(/\swidth="\d+"/, ` width="${size}"`)
+        .replace(/\sheight="\d+"/, ` height="${size}"`)
+    );
+}
+
+// General UI
+export const iconX           = icon("x");
+export const iconPlus        = icon("plus");
+export const iconMinus       = icon("minus");
+export const iconCheck       = icon("check");
+export const iconMenu        = icon("menu");
+export const iconLink        = icon("link");
+export const iconPencil      = icon("pencil");
+export const iconUpload      = icon("upload");
+export const iconCrosshair   = icon("crosshair");
+
+// Navigation
+export const iconNavSchema      = icon("schema");
+export const iconNavMigrations  = icon("git-commit");
+export const iconNavStorage     = icon("database");
+
+// Arrows / sorting
+export const iconArrowDown    = icon("arrow-down");
+export const iconArrowUp      = icon("arrow-up");
+export const iconArrowLeft    = icon("arrow-left");
+export const iconArrowsUpDown = icon("arrows-up-down");
+
+// Tables / schema
+export const iconTable     = icon("table");
+export const iconTableOff  = icon("table-off");
+export const iconTablePlus = icon("table-plus");
+export const iconKey       = icon("key");
+
+// Column type indicators
+export const iconHash       = icon("hash");
+export const iconLetterT    = icon("letter-t");
+export const iconCalendar   = icon("calendar");
+export const iconBraces     = icon("braces");
+export const iconFile       = icon("file");
+export const iconToggleLeft = icon("toggle-left");
+
+// Migrations
+export const iconFileCode = icon("file-code");
+
+// Logos (inlined SVGs — not from Tabler)
+export function logoMark(height = 12) {
+  return raw(
+    `<svg height="${height}" viewBox="0 0 170 170" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M85 0C108.839 1.04202e-06 130.385 9.81362 145.82 25.6211C146.295 26.1077 146.765 26.5998 147.229 27.0977C141.126 42.0264 169.715 61.9624 169.993 83.9014C169.998 84.267 170 84.6332 170 85C170 131.944 131.944 170 85 170H0V85C2.052e-06 38.0558 38.0558 -2.052e-06 85 0Z" fill="currentColor"/></svg>`,
+  );
+}
 
 export function logoWordmark(height = 14) {
   return raw(
