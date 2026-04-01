@@ -38,7 +38,7 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
 
         <link
           rel="stylesheet"
-          href="https://esm.sh/gh/erikthalen/jazz@v0.1.0-beta.19/jazz.css"
+          href="https://esm.sh/gh/erikthalen/jazz@v0.1.0-beta.20/jazz.css"
         />
 
         <script
@@ -58,19 +58,37 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             flex-shrink: 0;
           }
           .active-db-dot--none {
-            background: var(--pb-text-faint, #52525b);
+            background: var(--jazz-neutral-400);
           }
           .active-db-name {
             font-family: var(--pb-monospace, ui-monospace, monospace);
           }
 
           /* badge variants (base .badge is Jazz) */
-          .badge.pk      { background: var(--pb-badge-pk-bg, #faa087); color: var(--pb-badge-pk-fg, #522a09); }
-          .badge.fk      { background: var(--pb-badge-fk-bg, #4ade80); color: var(--pb-badge-fk-fg, #052e16); }
-          .badge.upload  { background: var(--pb-badge-pk-bg, #faa087); color: var(--pb-badge-pk-fg, #522a09); }
-          .badge.original { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
-          .badge.active  { background: rgba(34, 197, 94, 0.12);  color: #4ade80; }
-          .badge.s3      { background: rgba(56, 189, 248, 0.12);  color: #38bdf8; }
+          .badge.pk {
+            background: #faa087;
+            color: #522a09;
+          }
+          .badge.fk {
+            background: var(--jazz-constructive-300);
+            color: var(--jazz-constructive-900);
+          }
+          .badge.upload {
+            background: #faa087;
+            color: #522a09;
+          }
+          .badge.original {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+          }
+          .badge.active {
+            background: rgba(34, 197, 94, 0.12);
+            color: #4ade80;
+          }
+          .badge.s3 {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+          }
 
           /* pagination */
           .pagination {
@@ -92,27 +110,41 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
           }
           .pagination-btn {
             cursor: pointer;
-            transition: background 0.12s, color 0.12s, border-color 0.12s;
+            transition:
+              background 0.12s,
+              color 0.12s,
+              border-color 0.12s;
             white-space: nowrap;
           }
-          .pagination-btn.active { pointer-events: none; }
+          .pagination-btn.active {
+            pointer-events: none;
+          }
           .pagination-dots {
             display: flex;
             align-items: center;
             justify-content: center;
             width: 2rem;
             height: 2rem;
-            color: var(--pb-text-muted, #a1a1aa);
+            color: var(--jazz-neutral-500);
             font-size: 0.875rem;
             letter-spacing: 0.1em;
             user-select: none;
           }
 
           /* sql syntax highlight */
-          .sql-keyword { color: var(--pb-syntax-keyword, #4ec9b0); }
-          .sql-string  { color: var(--pb-syntax-string, #9cdcfe); }
-          .sql-comment { color: var(--pb-syntax-comment, #6a9955); font-style: italic; }
-          .sql-number  { color: var(--pb-syntax-number, #b5cea8); }
+          .sql-keyword {
+            color: #4ec9b0;
+          }
+          .sql-string {
+            color: #9cdcfe;
+          }
+          .sql-comment {
+            color: #6a9955;
+            font-style: italic;
+          }
+          .sql-number {
+            color: #b5cea8;
+          }
 
           /* toast */
           #toast-container {
@@ -125,8 +157,14 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             width: 320px;
           }
           @keyframes toast-in {
-            from { opacity: 0; transform: translateY(0.5rem); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+              opacity: 0;
+              transform: translateY(0.5rem);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
           .toast {
             grid-row: 1;
@@ -142,14 +180,37 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             gap: 0.75rem;
             pointer-events: none;
             animation: toast-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+            transition:
+              transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease;
           }
-          .toast:first-child  { pointer-events: all; z-index: 3; }
-          .toast:nth-child(2) { z-index: 2; transform: translateY(-4px); }
-          .toast:nth-child(3) { z-index: 1; transform: translateY(-8px); }
-          .toast:nth-child(n+4) { z-index: 0; transform: translateY(-12px); opacity: 0; pointer-events: none; }
-          .toast-content { flex: 1; min-width: 0; }
-          .toast-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.2rem; }
+          .toast:first-child {
+            pointer-events: all;
+            z-index: 3;
+          }
+          .toast:nth-child(2) {
+            z-index: 2;
+            transform: translateY(-4px);
+          }
+          .toast:nth-child(3) {
+            z-index: 1;
+            transform: translateY(-8px);
+          }
+          .toast:nth-child(n + 4) {
+            z-index: 0;
+            transform: translateY(-12px);
+            opacity: 0;
+            pointer-events: none;
+          }
+          .toast-content {
+            flex: 1;
+            min-width: 0;
+          }
+          .toast-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+          }
           .toast-body {
             font-size: 0.8rem;
             color: var(--jazz-neutral-500, #a1a1aa);
@@ -172,9 +233,16 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             align-items: center;
             justify-content: center;
           }
-          .toast-dismiss:hover { border-color: transparent; color: var(--jazz-neutral-600, #a1a1aa); }
-          .toast-error { border-color: var(--jazz-destructive-200); }
-          .toast-error .toast-title { color: var(--jazz-destructive-600, #f87171); }
+          .toast-dismiss:hover {
+            border-color: transparent;
+            color: var(--jazz-neutral-600, #a1a1aa);
+          }
+          .toast-error {
+            border-color: var(--jazz-destructive-200);
+          }
+          .toast-error .toast-title {
+            color: var(--jazz-destructive-600, #f87171);
+          }
           #toast-clear-all {
             display: none;
             grid-row: 2;
@@ -188,42 +256,15 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             height: auto;
             pointer-events: all;
           }
-          #toast-clear-all:hover { border-color: transparent; }
-          #toast-container:has(.toast ~ .toast) #toast-clear-all { display: block; }
+          #toast-clear-all:hover {
+            border-color: transparent;
+          }
+          #toast-container:has(.toast ~ .toast) #toast-clear-all {
+            display: block;
+          }
 
           :root {
-            --pb-sans-serif: system-ui, sans-serif;
-            --pb-monospace: system-mono, monospace;
-
             --jazz-primary: light-dark(#111, #fefefe);
-
-            --pb-text-muted: #8a8a93;
-            --pb-text-faint: #5e5e5e;
-            --pb-text-heading: #e4e4e7;
-
-            --pb-primary: #fafafa;
-            --pb-primary-fg: #09090b;
-
-            --pb-danger: #ef4444;
-            --pb-danger-fg: white;
-
-            --pb-badge-bg: #a1a1aa;
-            --pb-badge-fg: #27272a;
-            --pb-badge-pk-bg: #faa087;
-            --pb-badge-pk-fg: #522a09;
-            --pb-badge-fk-bg: #4ade80;
-            --pb-badge-fk-fg: #052e16;
-
-            --pb-diagram-header: #0e0e0e;
-            --pb-diagram-title: #dcdcdc;
-            --pb-diagram-relation: #535353;
-            --pb-diagram-row-alt: #1b1b1b;
-
-            --pb-syntax-bg: #1a1a1f;
-            --pb-syntax-keyword: #4ec9b0;
-            --pb-syntax-string: #9cdcfe;
-            --pb-syntax-comment: #6a9955;
-            --pb-syntax-number: #b5cea8;
           }
 
           body {
@@ -272,29 +313,11 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
           }
 
           .text-muted {
-            color: var(--pb-text-muted);
+            color: var(--jazz-neutral-500);
           }
 
           .text-faint {
-            color: var(--pb-text-faint);
-          }
-
-          @keyframes fade-in {
-            from {
-              opacity: 0;
-            }
-            to {
-              opacity: 1;
-            }
-          }
-          @keyframes fade-out {
-            from {
-              opacity: 1;
-            }
-            to {
-              opacity: 0;
-            }
-          }
+            color: var(--jazz-neutral-400);
           }
         </style>
       </head>

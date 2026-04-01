@@ -330,7 +330,7 @@ export function svgRelations(
       data-lane-offset="${laneOffset}"
       d="${d}"
       fill="none"
-      style="stroke:var(--pb-diagram-relation);stroke-width:calc(1.5 / (var(--pb-zoom, 1) * 2));stroke-dasharray:max(7, calc(7 / (var(--pb-zoom, 1) * 2))) max(7, calc(7 / (var(--pb-zoom, 1) * 2)))"
+      style="stroke:var(--jazz-neutral-300);stroke-width:calc(1.5 / (var(--pb-zoom, 1) * 2));stroke-dasharray:max(7, calc(7 / (var(--pb-zoom, 1) * 2))) max(7, calc(7 / (var(--pb-zoom, 1) * 2)))"
     />`;
   });
 

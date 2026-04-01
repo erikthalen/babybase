@@ -50,7 +50,7 @@ const contentStyles = css`
     overflow-x: auto;
     white-space: pre;
     color: #fafafa;
-    background: var(--pb-syntax-bg);
+    background: var(--jazz-neutral-0);
     border-radius: 8px;
     padding: 1rem 1.25rem;
     margin: 0;

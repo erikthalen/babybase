@@ -50,7 +50,7 @@ const styles = css`
     overflow-x: auto;
     white-space: pre;
     color: #fafafa;
-    background: var(--pb-syntax-bg);
+    background: var(--jazz-neutral-0);
     border-radius: 8px;
     padding: 1rem 1.25rem;
   }
@@ -238,7 +238,7 @@ export function migrationsView(opts: {
           <button
             data-on:click="$_description=''; $filename=''; $sql=''; document.getElementById('migration-editor').showModal()"
           >
-            ${iconPlus(12)} New migration
+            ${iconPlus(16)} New migration
           </button>
         </div>
       </div>

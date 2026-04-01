@@ -53,8 +53,8 @@ const rowsStyles = css`
   .row-count {
     padding: 0.625rem 0.875rem;
     font-size: 0.8rem;
-    color: var(--pb-text-muted);
-    border-top: 1px solid var(--pb-border);
+    color: var(--jazz-neutral-500);
+    border-top: 1px solid var(--jazz-neutral-200);
   }
   .pk-cell {
     font-size: 0.8rem;
@@ -96,11 +96,11 @@ const rowsStyles = css`
   }
   
   .col-selector-count {
-    color: var(--pb-accent);
+    color: var(--jazz-primary);
   }
   mark {
-    background: var(--pb-badge-fk-bg);
-    color: var(--pb-badge-fk-fg);
+    background: var(--jazz-constructive-300);
+    color: var(--jazz-constructive-900);
     border-radius: 2px;
   }
 `;

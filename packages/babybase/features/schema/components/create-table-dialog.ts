@@ -23,10 +23,10 @@ const styles = css`
     left: 50%;
     top: 50%;
     translate: -50% -50%;
-    background: var(--pb-surface);
-    border: 1px solid var(--pb-border);
+    background: var(--jazz-neutral-50);
+    border: 1px solid var(--jazz-neutral-200);
     border-radius: 8px;
     padding: 1.5rem;
-    color: var(--pb-text);
+    color: var(--jazz-neutral-900);
   }
 `;

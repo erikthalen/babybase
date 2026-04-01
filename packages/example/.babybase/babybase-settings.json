@@ -5,9 +5,9 @@
     },
     "chinook.db": {
       "camera": {
-        "x": 49,
-        "y": -130,
-        "z": 1
+        "x": 559.4812853345848,
+        "y": -64.05270117947418,
+        "z": 0.6260201418212291
       },
       "tablePositions": {
         "invoice_items": {
@@ -62,7 +62,20 @@
     },
     "chinook.db.2026-03-31T21-39-15-971Z-756500.bak": {
       "database": "chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+    },
+    "test.db": {
+      "camera": {
+        "x": 45,
+        "y": 69,
+        "z": 1
+      },
+      "tablePositions": {
+        "_new_invoice_items": {
+          "x": 30,
+          "y": 60
+        }
+      }
     }
   },
-  "activeDatabase": ".babybase/mounts/chinook.db.2026-03-15T18-25-39-446Z-284083.bak"
+  "activeDatabase": "./test.db"
 }

@@ -1,5 +1,10 @@
 import { html } from "hono/html";
-import { iconKey, iconLink, iconPencil, iconTable } from "../../../components/icons.ts";
+import {
+  iconKey,
+  iconLink,
+  iconPencil,
+  iconTable,
+} from "../../../components/icons.ts";
 import type { DesiredColumn, TableSchema } from "../queries.ts";
 
 const css = String.raw;
@@ -53,7 +58,7 @@ export const tableBoxStyles = css`
     border: none;
     cursor: pointer;
     padding: 3px 5px;
-    color: var(--pb-text-faint);
+    color: var(--jazz-neutral-400);
     display: flex;
     align-items: center;
     text-decoration: none;
@@ -63,7 +68,7 @@ export const tableBoxStyles = css`
   .table-box-edit-btn:hover,
   .table-box-link-btn:hover {
     background: none;
-    color: var(--pb-text-muted);
+    color: var(--jazz-neutral-500);
   }
   .table-box-edit-btn[data-tooltip]::before,
   .table-box-link-btn[data-tooltip]::before {
@@ -84,7 +89,7 @@ export const tableBoxStyles = css`
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--pb-primary, #f97316);
+    background: var(--jazz-primary);
     flex-shrink: 0;
     pointer-events: none;
   }
@@ -110,7 +115,7 @@ export const tableBoxStyles = css`
   }
   .table-box-col-type {
     font-size: 10px;
-    color: var(--pb-text-faint);
+    color: var(--jazz-neutral-400);
     font-family: var(--pb-monospace);
     letter-spacing: 0.05em;
     white-space: nowrap;
@@ -142,7 +147,8 @@ export function tableBox(
           (!isNew && t.foreignKeys.some((f) => f.from === c.originalName))
             ? "⤷ "
             : "";
-        const bg = ci % 2 === 1 ? "var(--jazz-neutral-0)" : "var(--jazz-neutral-50)";
+        const bg =
+          ci % 2 === 1 ? "var(--jazz-neutral-0)" : "var(--jazz-neutral-50)";
         const extraClass = isNew ? " table-box-row--pending-new" : "";
         return html`<div
           class="table-box-row${extraClass}"
@@ -157,7 +163,8 @@ export function tableBox(
       })
     : t.columns.map((c, ci) => {
         const fk = t.foreignKeys.some((f) => f.from === c.name) ? "⤷ " : "";
-        const bg = ci % 2 === 1 ? "var(--jazz-neutral-0)" : "var(--jazz-neutral-50)";
+        const bg =
+          ci % 2 === 1 ? "var(--jazz-neutral-0)" : "var(--jazz-neutral-50)";
         return html`<div
           class="table-box-row"
           style="height:${ROW_H}px;background:${bg}"

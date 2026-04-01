@@ -1,5 +1,5 @@
 import { html } from "hono/html";
-import { iconX } from "../../../components/icons.ts";
+import { iconChevronDown, iconX } from "../../../components/icons.ts";
 import type { Column } from "../../tables/queries.ts";
 import type { DesiredColumn, ForeignKey } from "../queries.ts";
 
@@ -45,7 +45,8 @@ const css = String.raw;
 
 const shellStyles = css`
   #edit-table-dialog {
-    width: min(90vw, 680px);
+    width: min(90vw, 750px);
+    max-width: none;
     height: 100vh;
     overflow: auto;
     top: 0;
@@ -58,29 +59,37 @@ const shellStyles = css`
 
 const contentStyles = css`
   #edit-dialog-body {
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    > header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      background: var(--jazz-neutral-100);
+    }
+
+    table {
+      border-radius: 0;
+      border-inline: none;
+    }
+
+    td {
+      display: flex;
+      align-items: center;
+    }
+
+    input:not([type="checkbox"]),
+    select {
+      width: 100%;
+    }
   }
-  #edit-dialog-col-list {
-    display: contents;
-  }
-  .etd-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.25rem;
-    background: var(--jazz-neutral-100);
-  }
+
   .etd-header-title {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    white-space: nowrap;
   }
+
   .etd-header-badge {
     color: var(--jazz-neutral-600);
     border: 1px solid var(--jazz-neutral-400);
@@ -92,7 +101,6 @@ const contentStyles = css`
     flex-direction: column;
     gap: 1rem;
     padding: 1.25rem;
-    /* border-bottom: 1px solid var(--pb-border); */
   }
   .etd-field-row {
     display: grid;
@@ -102,32 +110,11 @@ const contentStyles = css`
   }
   .etd-field-label {
     font-size: 0.875rem;
-    color: var(--pb-text);
+    color: var(--jazz-neutral-900);
   }
   .etd-field-input {
     width: 100%;
     box-sizing: border-box;
-  }
-  .etd-col-grid {
-    display: grid;
-    grid-template-columns: 2fr 1.5fr 1.5fr 2fr auto 28px;
-    padding: 0 0.5rem;
-  }
-  .etd-col-labels {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-    gap: 8px;
-    margin: 0 -0.5rem;
-    padding: 0.625rem 1rem;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    color: var(--jazz-neutral-400);
-    letter-spacing: 0.06em;
-    background: var(--jazz-neutral-100);
-    border-top: 1px solid var(--jazz-neutral-300);
-    border-bottom: 1px solid var(--jazz-neutral-300);
-    align-items: center;
   }
   .etd-footer {
     display: flex;
@@ -141,46 +128,9 @@ const contentStyles = css`
     display: flex;
     gap: 8px;
   }
-  .edit-col-row {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: subgrid;
-    gap: 8px;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--pb-border);
-    align-items: center;
-  }
   .edit-col-row--pk {
     opacity: 0.5;
   }
-  .col-name {
-    flex: 2;
-    min-width: 0;
-  }
-  .col-type {
-    flex: 1.5;
-    min-width: 0;
-  }
-  .col-default {
-    flex: 1.5;
-    min-width: 0;
-  }
-  .col-fkref {
-    flex: 2;
-    min-width: 0;
-  }
-  .col-pk-spacer {
-    flex: 2;
-    min-width: 0;
-  }
-  .col-notnull-label {
-    white-space: nowrap;
-  }
-  .col-delete-placeholder {
-    display: inline-block;
-    width: 28px;
-  }
-
   .col-deleted {
     opacity: 0.35;
     text-decoration: line-through;
@@ -188,25 +138,6 @@ const contentStyles = css`
   .col-deleted input,
   .col-deleted select {
     pointer-events: none;
-  }
-  .etd-table-name-input {
-    font-size: inherit;
-    font-weight: inherit;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: none;
-    color: var(--pb-text);
-    padding: 0;
-    flex: 1;
-    min-width: 0;
-    outline: none;
-  }
-  .etd-table-name-input:focus {
-    border-bottom-color: var(--pb-border);
-  }
-  .etd-table-name-input::placeholder {
-    color: var(--pb-text-faint);
-    font-weight: 400;
   }
 `;
 
@@ -221,6 +152,40 @@ export function editTableDialogShell() {
         <!-- Populated by SSE when edit button is clicked -->
       </div>
     </dialog>
+  `;
+}
+
+function customSelect(
+  popoverId: string,
+  signalName: string,
+  options: { value: string; label: string; selected: boolean }[],
+  placeholder: string,
+) {
+  return html`
+    <button type="button" popovertarget="${popoverId}" class="outline">
+      <span data-text="$${signalName} || '${placeholder}'"></span>
+      ${iconChevronDown(14)}
+    </button>
+    <div id="${popoverId}" popover onchange="this.hidePopover()">
+      <menu>
+        ${options.map(
+          ({ value, label, selected }) => html`
+            <li>
+              <label>
+                <input
+                  type="radio"
+                  name="${signalName}"
+                  data-bind:${signalName}
+                  value="${value}"
+                  ${selected ? "checked" : ""}
+                />
+                ${label}
+              </label>
+            </li>
+          `,
+        )}
+      </menu>
+    </div>
   `;
 }
 
@@ -240,86 +205,93 @@ function colRow(
 ) {
   if (col.pk) {
     return html`
-      <div
+      <tr
         id="edit-col-row-${i}"
-        class="edit-col-row edit-col-row--pk"
+        class="edit-col-row--pk"
         title="Primary key columns cannot be edited"
       >
-        <input value="${col.name}" disabled class="col-name" type="text" />
-        <input value="${col.type}" disabled class="col-type" type="text" />
-        <input value="" disabled placeholder="—" class="col-default" type="text" />
-        <span class="col-pk-spacer"></span>
-        <input type="checkbox" checked disabled />
-        <span class="col-delete-placeholder"></span>
-      </div>
+        <td><input value="${col.name}" disabled type="text" /></td>
+        <td><input value="${col.type}" disabled type="text" /></td>
+        <td><input value="" disabled placeholder="—" type="text" /></td>
+        <td></td>
+        <td><input type="checkbox" checked disabled /></td>
+        <td></td>
+      </tr>
     `;
   }
 
   const fkRef = col.fkRef;
-  const fkOptions = otherSchema.flatMap((t) =>
-    t.columns.map((c) => {
-      const val = `${t.name}.${c.name}`;
-      return html`<option
-        value="${val}"
-        ${fkRef === val ? html` selected` : ""}
-      >
-        ${val}
-      </option>`;
-    }),
+  const fkOptions = [
+    { value: "", label: "— none —", selected: fkRef === "" },
+    ...otherSchema.flatMap((t) =>
+      t.columns.map((c) => {
+        const val = `${t.name}.${c.name}`;
+        return { value: val, label: val, selected: fkRef === val };
+      }),
+    ),
+  ];
+
+  const fkSelect = customSelect(
+    `editcol-${i}-fk`,
+    `editcol_${i}_fkref`,
+    fkOptions,
+    "— none —",
   );
 
-  const fkSelect = html`<select
-    data-bind:editcol_${i}_fkref
-    class="col-fkref"
-    title="Foreign key reference"
-  >
-    <option value="">— none —</option>
-    ${fkOptions}
-  </select>`;
-
   return html`
-    <div
+    <tr
       id="edit-col-row-${i}"
-      class="edit-col-row"
       data-class="{'col-deleted': $editcol_${i}_deleted}"
     >
-      <input
-        data-bind:editcol_${i}_name
-        value="${col.name}"
-        class="col-name"
-        type="text"
-      />
-      <select data-bind:editcol_${i}_type class="col-type">
-        ${SQLITE_TYPES.map(
-          (t) =>
-            html`<option value="${t}" ${t === col.type ? " selected" : ""}>
-              ${t}
-            </option>`,
+      <td>
+        <input data-bind:editcol_${i}_name value="${col.name}" type="text" />
+      </td>
+      <td>
+        ${customSelect(
+          `editcol-${i}-type`,
+          `editcol_${i}_type`,
+          SQLITE_TYPES.map((t) => ({
+            value: t,
+            label: t,
+            selected: t === col.type,
+          })),
+          "Select type",
         )}
-      </select>
-      <input
-        list="col-defaults"
-        data-bind:editcol_${i}_default
-        value="${col.dflt_value}"
-        placeholder="NULL"
-        class="col-default"
-        type="text"
-      />
-      ${fkSelect}
-      <input
-        type="checkbox"
-        data-bind:editcol_${i}_notnull
-        ${col.notnull ? "checked" : ""}
-      />
-      <button
-        type="button"
-        title="Remove column"
-        data-on:click="$editcol_${i}_deleted = !$editcol_${i}_deleted"
-        class="square destructive ghost"
-      >
-        ${iconX(16)}
-      </button>
-    </div>
+      </td>
+      <td>
+        ${customSelect(
+          `editcol-${i}-default`,
+          `editcol_${i}_default`,
+          [
+            { value: "", label: "— none —", selected: col.dflt_value === "" },
+            ...DEFAULT_SUGGESTIONS.map((s) => ({
+              value: s,
+              label: s,
+              selected: s === col.dflt_value,
+            })),
+          ],
+          "NULL",
+        )}
+      </td>
+      <td>${fkSelect}</td>
+      <td>
+        <input
+          type="checkbox"
+          data-bind:editcol_${i}_notnull
+          ${col.notnull ? "checked" : ""}
+        />
+      </td>
+      <td>
+        <button
+          type="button"
+          title="Remove column"
+          data-on:click="$editcol_${i}_deleted = !$editcol_${i}_deleted"
+          class="square destructive ghost"
+        >
+          ${iconX(16)}
+        </button>
+      </td>
+    </tr>
   `;
 }
 
@@ -371,11 +343,11 @@ export function editTableDialogContent(
       ${contentStyles}
     </style>
 
-    <div class="etd-header">
-      <h2 class="etd-header-title">
+    <header>
+      <h4 class="etd-header-title">
         Update table
         <span class="etd-header-badge">${tableName}</span>
-      </h2>
+      </h4>
       <button
         type="button"
         data-on:click="$_editTableDialog.close()"
@@ -383,7 +355,7 @@ export function editTableDialogContent(
       >
         ${iconX(16)}
       </button>
-    </div>
+    </header>
 
     <div class="etd-fields">
       <div class="etd-field-row">
@@ -398,22 +370,21 @@ export function editTableDialogContent(
       </div>
     </div>
 
-    <div class="etd-col-grid">
-      <div class="etd-col-labels">
-        <span class="col-name">Name</span>
-        <span class="col-type">Type</span>
-        <span class="col-default">Default</span>
-        <span class="col-fkref">Ref</span>
-        <span class="col-notnull-label">Not null</span>
-        <span class="col-delete-placeholder"></span>
-      </div>
-
-      <div id="edit-dialog-col-list">${rows}</div>
-    </div>
-
-    <datalist id="col-defaults">
-      ${DEFAULT_SUGGESTIONS.map((s) => html`<option value="${s}"></option>`)}
-    </datalist>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Ref</th>
+          <th>Not null</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="edit-dialog-col-list">
+        ${rows}
+      </tbody>
+    </table>
 
     <div class="etd-footer">
       <button
@@ -424,7 +395,11 @@ export function editTableDialogContent(
         + Add column
       </button>
       <div class="etd-footer-actions">
-        <button type="button" class="ghost" data-on:click="$_editTableDialog.close()">
+        <button
+          type="button"
+          class="ghost"
+          data-on:click="$_editTableDialog.close()"
+        >
           Cancel
         </button>
         <button
@@ -444,55 +419,75 @@ export function newEmptyColRow(
   i: number,
   otherSchema: { name: string; columns: { name: string }[] }[],
 ) {
-  const fkOptions = otherSchema.flatMap((t) =>
-    t.columns.map((c) => {
-      const val = `${t.name}.${c.name}`;
-      return html`<option value="${val}">${val}</option>`;
-    }),
+  const fkSelect = customSelect(
+    `editcol-${i}-fk`,
+    `editcol_${i}_fkref`,
+    [
+      { value: "", label: "— none —", selected: true },
+      ...otherSchema.flatMap((t) =>
+        t.columns.map((c) => {
+          const val = `${t.name}.${c.name}`;
+          return { value: val, label: val, selected: false };
+        }),
+      ),
+    ],
+    "— none —",
   );
 
-  const fkSelect = html`<select
-    data-bind:editcol_${i}_fkref
-    class="col-fkref"
-    title="Foreign key reference"
-  >
-    <option value="">— none —</option>
-    ${fkOptions}
-  </select>`;
-
   return html`
-    <div
+    <tr
       id="edit-col-row-${i}"
-      class="edit-col-row"
       data-class="{'col-deleted': $editcol_${i}_deleted}"
     >
-      <input
-        data-bind:editcol_${i}_name
-        placeholder="column_name"
-        class="col-name"
-        type="text"
-      />
-      <select data-bind:editcol_${i}_type class="col-type">
-        ${SQLITE_TYPES.map((t) => html`<option value="${t}">${t}</option>`)}
-      </select>
-      <input
-        list="col-defaults"
-        data-bind:editcol_${i}_default
-        placeholder="NULL"
-        class="col-default"
-        type="text"
-      />
-      ${fkSelect}
-      <input type="checkbox" data-bind:editcol_${i}_notnull />
-      <button
-        type="button"
-        title="Remove column"
-        data-on:click="$editcol_${i}_deleted = !$editcol_${i}_deleted"
-        class="destructive ghost square"
-      >
-        ${iconX(16)}
-      </button>
-    </div>
+      <td>
+        <input
+          data-bind:editcol_${i}_name
+          placeholder="column_name"
+          type="text"
+        />
+      </td>
+      <td>
+        ${customSelect(
+          `editcol-${i}-type`,
+          `editcol_${i}_type`,
+          SQLITE_TYPES.map((t, idx) => ({
+            value: t,
+            label: t,
+            selected: idx === 0,
+          })),
+          "Select type",
+        )}
+      </td>
+      <td>
+        ${customSelect(
+          `editcol-${i}-default`,
+          `editcol_${i}_default`,
+          [
+            { value: "", label: "— none —", selected: true },
+            ...DEFAULT_SUGGESTIONS.map((s) => ({
+              value: s,
+              label: s,
+              selected: false,
+            })),
+          ],
+          "NULL",
+        )}
+      </td>
+      <td>${fkSelect}</td>
+      <td>
+        <input type="checkbox" data-bind:editcol_${i}_notnull />
+      </td>
+      <td>
+        <button
+          type="button"
+          title="Remove column"
+          data-on:click="$editcol_${i}_deleted = !$editcol_${i}_deleted"
+          class="destructive ghost square"
+        >
+          ${iconX(16)}
+        </button>
+      </td>
+    </tr>
   `;
 }
 
@@ -503,8 +498,8 @@ export function newTableDialogContent(base: string) {
       ${contentStyles}
     </style>
 
-    <div class="etd-header">
-      <h2 class="etd-header-title">
+    <header>
+      <h4 class="etd-header-title">
         New table
         <input
           data-bind:newtablename
@@ -513,7 +508,7 @@ export function newTableDialogContent(base: string) {
           autofocus
           type="text"
         />
-      </h2>
+      </h4>
       <button
         type="button"
         data-on:click="$_editTableDialog.close()"
@@ -521,24 +516,21 @@ export function newTableDialogContent(base: string) {
       >
         ${iconX(16)}
       </button>
-    </div>
+    </header>
 
-    <div class="etd-col-grid">
-      <div class="etd-col-labels">
-        <span class="col-name">Name</span>
-        <span class="col-type">Type</span>
-        <span class="col-default">Default</span>
-        <span class="col-fkref">Ref</span>
-        <span class="col-notnull-label">Not null</span>
-        <span class="col-delete-placeholder"></span>
-      </div>
-
-      <div id="edit-dialog-col-list"></div>
-    </div>
-
-    <datalist id="col-defaults">
-      ${DEFAULT_SUGGESTIONS.map((s) => html`<option value="${s}"></option>`)}
-    </datalist>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Ref</th>
+          <th>Not null</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="edit-dialog-col-list"></tbody>
+    </table>
 
     <div class="etd-footer">
       <button
@@ -549,7 +541,11 @@ export function newTableDialogContent(base: string) {
         + Add column
       </button>
       <div class="etd-footer-actions">
-        <button class="ghost" type="button" data-on:click="$_editTableDialog.close()">
+        <button
+          class="ghost"
+          type="button"
+          data-on:click="$_editTableDialog.close()"
+        >
           Cancel
         </button>
         <button

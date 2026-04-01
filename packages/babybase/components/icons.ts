@@ -34,6 +34,7 @@ export const iconNavMigrations  = icon("git-commit");
 export const iconNavStorage     = icon("database");
 
 // Arrows / sorting
+export const iconChevronDown  = icon("chevron-down");
 export const iconArrowDown    = icon("arrow-down");
 export const iconArrowUp      = icon("arrow-up");
 export const iconArrowLeft    = icon("arrow-left");

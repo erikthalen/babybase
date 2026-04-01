@@ -43,8 +43,8 @@ const styles = css`
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
   }
 .storage-dropzone-card {
-    background: var(--pb-surface);
-    border: 1px solid var(--pb-border);
+    background: var(--jazz-neutral-50);
+    border: 1px solid var(--jazz-neutral-200);
     border-radius: 12px;
     overflow-y: clip;
     padding: 1rem;
