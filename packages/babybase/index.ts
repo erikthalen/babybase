@@ -8,7 +8,7 @@ import { readSettings, writeSettings } from "./features/storage/queries.ts";
 import { createStorageRouter } from "./features/storage/router.ts";
 import { startAutoBackupScheduler } from "./features/storage/scheduler.ts";
 import { createTablesRouter } from "./features/tables/router.ts";
-import type { BabybaseConfig, S3Config } from "./types.ts";
+import type { BabybaseConfig, S3Config } from "./types.js";
 
 type AppVariables = {
   db: DatabaseSync | null;
