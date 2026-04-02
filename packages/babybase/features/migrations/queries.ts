@@ -70,6 +70,20 @@ export function deleteMigration(
   db.prepare("DELETE FROM _babybase_migrations WHERE name = ?").run(filename);
 }
 
+export function runInlineMigrations(
+  db: DatabaseSync,
+  sqls: string[],
+): void {
+  ensureMigrationsTable(db);
+  const applied = new Set(getApplied(db));
+  for (let i = 0; i < sqls.length; i++) {
+    const name = `__inline_${i}`;
+    if (applied.has(name)) continue;
+    db.exec(sqls[i]);
+    db.prepare("INSERT INTO _babybase_migrations (name) VALUES (?)").run(name);
+  }
+}
+
 export function saveMigration(
   dir: string,
   filename: string,

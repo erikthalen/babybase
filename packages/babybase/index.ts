@@ -2,6 +2,7 @@ import { dirname } from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { Hono } from "hono";
 import { createDb } from "./db/client.ts";
+import { runInlineMigrations } from "./features/migrations/queries.ts";
 import { createMigrationsRouter } from "./features/migrations/router.ts";
 import { createSchemaRouter } from "./features/schema/router.ts";
 import { readSettings, writeSettings } from "./features/storage/queries.ts";
@@ -61,6 +62,7 @@ export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>
   if (resolved.database) {
     try {
       db = createDb(resolved.database);
+      if (config.migrations?.length) runInlineMigrations(db, config.migrations);
     } catch (err) {
       dbOpenError = (err as Error).message;
       dbOpenFailedPath = resolved.database;
@@ -78,6 +80,7 @@ export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>
     }
     resolved.database = newPath;
     db = createDb(newPath);
+    if (config.migrations?.length) runInlineMigrations(db, config.migrations);
     const current = readSettings(babybaseDir);
     writeSettings(babybaseDir, { ...current, activeDatabase: newPath });
   };
