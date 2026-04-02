@@ -281,6 +281,10 @@ export function layout({ title, nav: navHtml, content, toasts }: LayoutProps) {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+
+            svg {
+              width: auto;
+            }
           }
 
           .floating-nav {

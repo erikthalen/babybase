@@ -37,7 +37,7 @@ export function createTablesRouter(): Hono<AppEnv> {
   // List all tables — redirect to first table if any exist
   app.get("/", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const tables = listTables(db);
     const base = config.basePath.replace(/\/$/, "");
     if (tables.length > 0) {
@@ -59,7 +59,7 @@ export function createTablesRouter(): Hono<AppEnv> {
   // View rows for a table
   app.get("/:table", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const tableName = c.req.param("table");
     const page = Number(c.req.query("page") ?? 1);
     const base = config.basePath.replace(/\/$/, "");
@@ -132,7 +132,7 @@ export function createTablesRouter(): Hono<AppEnv> {
 
   // Toggle a column's visibility
   app.post("/:table/toggle-column/:col", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const db = c.get("db")!;
     const tableName = c.req.param("table");
     const colName = decodeURIComponent(c.req.param("col"));
@@ -201,7 +201,7 @@ export function createTablesRouter(): Hono<AppEnv> {
   // Insert row
   app.post("/:table", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const tableName = c.req.param("table");
     const body = (await c.req.json()) as Record<string, string>;
     const cols = Object.keys(body).filter((k) => body[k] !== "");

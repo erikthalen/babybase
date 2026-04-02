@@ -22,7 +22,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
 
   app.get("/", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     ensureMigrationsTable(db);
     const tables = listTables(db);
@@ -44,7 +44,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
   // Save new migration file
   app.post("/", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const body = (await c.req.json()) as Record<string, string>;
     const filename = String(body.filename);
     const sql = String(body.sql);
@@ -66,7 +66,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
   // Save and immediately run
   app.post("/save-and-run", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const body = (await c.req.json()) as Record<string, string>;
     const filename = String(body.filename);
     const sql = String(body.sql);
@@ -99,7 +99,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
   // Run all pending migrations in order
   app.post("/run-all", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     ensureMigrationsTable(db);
     const files = getFileMigrations(config.migrationsDir);
     const applied = new Set(getApplied(db));
@@ -141,7 +141,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
   // MUST be registered after /run-all and /save-and-run to avoid param capture
   app.post("/:name/run", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const name = decodeURIComponent(c.req.param("name"));
     ensureMigrationsTable(db);
     let errorMsg: HtmlEscapedString | Promise<HtmlEscapedString> | null = null;
@@ -171,7 +171,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
   // Delete a migration file and remove its applied record
   app.delete("/:name", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const name = decodeURIComponent(c.req.param("name"));
     ensureMigrationsTable(db);
     deleteMigration(db, config.migrationsDir, name);
@@ -189,7 +189,7 @@ export function createMigrationsRouter(): Hono<AppEnv> {
 
   // View SQL content of a migration file
   app.get("/:name", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const name = decodeURIComponent(c.req.param("name"));
     const sql = getMigrationSql(config.migrationsDir, name);
     const highlighted = highlightSql(sql);

@@ -10,18 +10,22 @@ import { startAutoBackupScheduler } from "./features/storage/scheduler.ts";
 import { createTablesRouter } from "./features/tables/router.ts";
 import type { BabybaseConfig, S3Config } from "./types.ts";
 
-export type AppEnv = {
-  Variables: {
-    db: DatabaseSync | null;
-    config: {
-      database: string | undefined;
-      basePath: string;
-      migrationsDir: string;
-      settingsDir: string;
-      readonly: boolean;
-    };
+type AppVariables = {
+  db: DatabaseSync | null;
+  babybaseConfig: {
+    database: string | undefined;
+    basePath: string;
+    migrationsDir: string;
+    settingsDir: string;
+    readonly: boolean;
   };
 };
+
+declare module "hono" {
+  interface ContextVariableMap extends AppVariables {}
+}
+
+export type AppEnv = { Variables: AppVariables };
 
 export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>; getDb: () => DatabaseSync | null } {
   const storageDir: string | undefined = typeof config.storage === "string"
@@ -34,7 +38,7 @@ export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>
     : undefined;
   const settingsDir = storageDir ? dirname(storageDir) : ".babybase";
 
-  const resolved: AppEnv["Variables"]["config"] = {
+  const resolved: AppEnv["Variables"]["babybaseConfig"] = {
     database: config.database,
     basePath: config.basePath ?? "/",
     migrationsDir: config.migrationsDir ?? "./.babybase/migrations",
@@ -96,7 +100,7 @@ export function defineBabybase(config: BabybaseConfig = {}): { app: Hono<AppEnv>
   // Inject db and config into every request
   app.use("*", async (c, next) => {
     c.set("db", db);
-    c.set("config", resolved);
+    c.set("babybaseConfig", resolved);
     await next();
   });
 

@@ -87,7 +87,7 @@ export function createStorageRouter(opts: {
 
   app.get("/", async (c) => {
     const db = c.get("db") as DatabaseSync | null;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const tables = db ? listTables(db) : [];
     const entries = await buildEntries(originalDatabase, storageDir, s3, settingsDir);
@@ -127,7 +127,7 @@ export function createStorageRouter(opts: {
 
   // Create a new backup
   app.post("/", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     if (!config.database) return c.json({ error: "No database mounted" }, 400);
 
@@ -169,7 +169,7 @@ export function createStorageRouter(opts: {
 
   // Upload an external database file
   app.post("/upload", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     try {
       const body = await c.req.parseBody();
       const file = body.file;
@@ -201,7 +201,7 @@ export function createStorageRouter(opts: {
   // Delete an S3 backup (also removes local mounted copy if present)
   app.delete("/s3/:name", async (c) => {
     if (!s3) return c.json({ error: "S3 not configured" }, 400);
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
 
@@ -238,7 +238,7 @@ export function createStorageRouter(opts: {
 
   // Delete a local backup or mounted copy (never touches S3)
   app.delete("/:name", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
 
@@ -330,7 +330,7 @@ export function createStorageRouter(opts: {
 
   // Mount a database file as the active database
   app.post("/:name/mount", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
 
@@ -388,7 +388,7 @@ export function createStorageRouter(opts: {
   // Clone an S3 backup to local mounts/ without mounting it
   app.post("/s3/:name/clone", async (c) => {
     if (!s3) return c.json({ error: "S3 not configured" }, 400);
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const name = decodeURIComponent(c.req.param("name"));
 

@@ -3,20 +3,20 @@ import { iconMinus, iconPlus } from "../../../components/icons.ts";
 
 export function zoomControls() {
   return html`
-  <style>
-    #zoom-controls {
-      align-items: center;
+    <style>
+      #zoom-controls {
+        > * {
+          outline-left: none;
+        }
 
-      > * {
-        border: none;
+        span {
+          width: 5ch;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
-
-      span {
-        width: 4ch;
-        text-align: center;
-      }
-    }
-  </style>
+    </style>
     <fieldset role="group" id="zoom-controls">
       <button
         class="ghost square"
@@ -26,7 +26,9 @@ export function zoomControls() {
       >
         ${iconMinus(16)}
       </button>
+
       <span id="zoom-level">100%</span>
+      
       <button
         class="ghost square"
         id="zoom-in"

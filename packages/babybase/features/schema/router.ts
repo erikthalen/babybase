@@ -67,7 +67,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   app.get("/", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const babybaseDir = config.settingsDir;
     const settings = readSettings(babybaseDir);
@@ -99,9 +99,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
   });
 
   app.post("/tables", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     let body: Record<string, string> = {};
     try {
@@ -129,8 +129,8 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Load new-table dialog content into the shared edit-table-dialog shell
   app.get("/new-table-dialog", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
-    const config = c.get("config");
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const signals = { newtablename: "", editColCount: 0 };
     const bodyHtml = newTableDialogContent(base);
@@ -142,9 +142,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Create a new table with column definitions
   app.post("/tables/new", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     let body: Record<string, unknown> = {};
     try {
@@ -217,9 +217,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Load edit dialog content for a specific table
   app.get("/tables/:name/edit-dialog", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const tableName = c.req.param("name");
     const dbColumns = getColumns(db, tableName);
@@ -274,7 +274,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Append a new empty column row to the dialog
   app.get("/tables/:name/new-column-row", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
     const idx = Number(c.req.query("idx") ?? 0);
     const tableName = c.req.param("name");
@@ -302,9 +302,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Save pending changes for a table (does NOT apply to DB yet)
   app.post("/tables/:name/pending", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const tableName = c.req.param("name");
 
@@ -356,7 +356,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
   // Return dialog content listing all pending changes with their SQL
   app.get("/edits-dialog", async (c) => {
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const allPending = getAllPendingChanges(db);
     const entries = allPending.map(({ tableName, desiredColumns }) => {
@@ -380,9 +380,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Remove pending changes for a single table
   app.delete("/tables/:name/pending", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const tableName = c.req.param("name");
     deletePendingForTable(db, tableName);
@@ -408,9 +408,9 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Publish: apply all pending changes, generate migration file
   app.post("/publish", async (c) => {
-    if (c.get("config").readonly) return c.json({ error: "readonly" }, 403);
+    if (c.get("babybaseConfig").readonly) return c.json({ error: "readonly" }, 403);
     const db = c.get("db")!;
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     const base = config.basePath.replace(/\/$/, "");
     const settings = readSettings(config.settingsDir);
     const dbName = config.database ? basename(config.database) : undefined;
@@ -473,7 +473,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Save a single table's drag position to settings
   app.post("/table-positions", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     if (!config.database) return c.json({ ok: false }, 400);
     let body: Record<string, unknown> = {};
     try {
@@ -499,7 +499,7 @@ export function createSchemaRouter(): Hono<AppEnv> {
 
   // Save camera pan/zoom state to settings
   app.post("/camera", async (c) => {
-    const config = c.get("config");
+    const config = c.get("babybaseConfig");
     if (!config.database) return c.json({ ok: false }, 400);
     let body: Record<string, unknown> = {};
     try {
